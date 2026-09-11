@@ -1,0 +1,28 @@
+import { PrismaPg } from "@prisma/adapter-pg";
+import { PrismaClient } from "./generated/prisma/client.ts";
+
+const connectionString = process.env.DATABASE_URL;
+
+if (!connectionString) {
+  throw new Error("DATABASE_URL is not set");
+}
+
+const globalForPrisma = globalThis as unknown as { db?: PrismaClient };
+
+export const db =
+  globalForPrisma.db ??
+  new PrismaClient({
+    adapter: new PrismaPg({
+      connectionString,
+      max: 10,
+      connectionTimeoutMillis: 5_000,
+      idleTimeoutMillis: 30_000,
+      statement_timeout: 10_000,
+    }),
+  });
+
+if (process.env.NODE_ENV !== "production") {
+  globalForPrisma.db = db;
+}
+
+export * from "./generated/prisma/client.ts";

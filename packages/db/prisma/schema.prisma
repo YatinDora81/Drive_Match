@@ -1,0 +1,129 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum BodyType {
+  HATCHBACK
+  SEDAN
+  SUV
+  MPV
+  COUPE
+  PICKUP
+}
+
+enum FuelType {
+  PETROL
+  DIESEL
+  CNG
+  ELECTRIC
+  HYBRID
+}
+
+enum Transmission {
+  MANUAL
+  AUTOMATIC
+}
+
+enum Parser {
+  LLM
+  HEURISTIC
+  OVERRIDE
+}
+
+model Vehicle {
+  id String @id @db.Uuid
+
+  make    String
+  model   String
+  variant String
+  year    Int
+
+  bodyType     BodyType
+  fuelType     FuelType
+  transmission Transmission
+
+  price      Int
+  kmDriven   Int
+  ownerCount Int
+  seats      Int
+
+  safetyRating Int?
+  mileageKmpl  Float?
+  rangeKm      Int?
+  engineCc     Int?
+  batteryKwh   Float?
+  powerBhp     Int?
+
+  color             String
+  city              String
+  registrationState String
+
+  features    String[]
+  description String   @db.Text
+
+  contentHash    String?
+  embeddingModel String?
+  indexedAt      DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([bodyType, price])
+  @@index([fuelType, transmission])
+  @@index([make, model])
+  @@index([price])
+  @@index([kmDriven])
+  @@index([year])
+  @@index([city])
+  @@map("vehicles")
+}
+
+enum SearchMode {
+  VECTOR
+  STRUCTURED
+}
+
+model SearchLog {
+  id String @id @default(cuid())
+
+  query     String @db.VarChar(500)
+  requestId String?
+  status    Int
+  errorCode String?
+
+  parser  Parser?
+  parsed  Json?
+  mode    SearchMode?
+  rankedBy String?
+  degraded Boolean @default(false)
+  explain  Boolean @default(false)
+
+  offset      Int     @default(0)
+  limit       Int     @default(0)
+  resultCount Int     @default(0)
+  total       Int?
+  exact       Boolean @default(true)
+  relaxed     Json?
+  warnings    Json?
+  topScore    Float?
+
+  understandingCached Boolean @default(false)
+  embeddingCached     Boolean @default(false)
+  understandingModel  String?
+  embeddingModel      String?
+
+  parseMs  Int @default(0)
+  embedMs  Int @default(0)
+  searchMs Int @default(0)
+  totalMs  Int @default(0)
+
+  createdAt DateTime @default(now())
+
+  @@index([createdAt(sort: Desc)])
+  @@map("search_logs")
+}
