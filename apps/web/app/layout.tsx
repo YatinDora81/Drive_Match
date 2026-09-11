@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
-import { Bricolage_Grotesque, Geist, Geist_Mono } from "next/font/google";
+import { Geist_Mono, Inter } from "next/font/google";
+import { AppShell } from "../src/components/layout/AppShell";
 import { Providers } from "./providers";
 import "./globals.css";
 
-const sans = Geist({
+const sans = Inter({
   subsets: ["latin"],
   variable: "--font-sans",
   display: "swap",
@@ -12,12 +13,6 @@ const sans = Geist({
 const mono = Geist_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
-  display: "swap",
-});
-
-const display = Bricolage_Grotesque({
-  subsets: ["latin"],
-  variable: "--font-display",
   display: "swap",
 });
 
@@ -34,13 +29,15 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${sans.variable} ${mono.variable} ${display.variable}`}
+      className={`${sans.variable} ${mono.variable}`}
     >
       <body
         suppressHydrationWarning
-        className="bg-paper font-sans text-[14px] text-ink antialiased"
+        className="font-sans text-[14px] text-body antialiased"
       >
-        <Providers>{children}</Providers>
+        <Providers>
+          <AppShell>{children}</AppShell>
+        </Providers>
       </body>
     </html>
   );
