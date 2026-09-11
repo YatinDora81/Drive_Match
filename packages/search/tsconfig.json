@@ -1,0 +1,5 @@
+{
+  "extends": "@repo/typescript-config/bun-library.json",
+  "include": ["src", "scripts", "test", "eval"],
+  "exclude": ["node_modules"]
+}

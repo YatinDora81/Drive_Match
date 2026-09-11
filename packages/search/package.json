@@ -1,0 +1,31 @@
+{
+  "name": "@repo/search",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "qdrant:init": "bun --env-file=../../.env scripts/init-collection.ts",
+    "index": "bun --env-file=../../.env scripts/index-catalogue.ts",
+    "eval:llm": "bun --env-file=../../.env scripts/eval-llm.ts",
+    "check-types": "tsc --noEmit",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@google/genai": "^2.15.0",
+    "@qdrant/js-client-rest": "^1.18.0",
+    "@repo/catalogue": "*",
+    "@repo/config": "*",
+    "@repo/contracts": "*",
+    "@repo/db": "*",
+    "@repo/logger": "*",
+    "p-limit": "^7.3.1"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "*",
+    "@types/bun": "latest",
+    "typescript": "5.9.2"
+  }
+}
