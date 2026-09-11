@@ -4,7 +4,6 @@ import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useFacets } from "../../hooks/useFacets";
-import { useRecents } from "../../hooks/useRecents";
 import { useSearch, useSummary } from "../../hooks/useSearch";
 import { ApiError } from "../../lib/api";
 import { formatCount } from "../../lib/format";
@@ -15,14 +14,16 @@ import {
   type SearchParams,
 } from "../../lib/search-request";
 import type { SearchFilters, SearchResult, SearchSort } from "../../lib/types";
+import { ShuffleIcon } from "../icons";
+import { useShell } from "../layout/shell-context";
 import { EmptyPane } from "../states/EmptyPane";
 import { FailedPane } from "../states/FailedPane";
 import { LoadingGrid, LoadingLine } from "../states/LoadingGrid";
 import { StartPane } from "../states/StartPane";
 import { UnsupportedPane } from "../states/UnsupportedPane";
+import { ChipButton } from "../ui/Chip";
 import { ExampleChips, useRotatingExample } from "./ExampleChips";
 import { LoadMore } from "./LoadMore";
-import { RecentSearches } from "./RecentSearches";
 import { RelaxedBanner } from "./RelaxedBanner";
 import { ResultGrid } from "./ResultGrid";
 import { ResultsHeader } from "./ResultsHeader";
@@ -42,11 +43,11 @@ function syncUrl(query: string | null): void {
 
 export function SearchWorkspace() {
   const searchParams = useSearchParams();
-  const initial = (searchParams.get("q") ?? "").trim();
+  const urlQuery = (searchParams.get("q") ?? "").trim();
 
-  const [input, setInput] = useState(initial);
+  const [input, setInput] = useState(urlQuery);
   const [params, setParams] = useState<SearchParams | null>(() =>
-    initial.length >= MIN_QUERY ? { query: initial, override: null } : null,
+    urlQuery.length >= MIN_QUERY ? { query: urlQuery, override: null } : null,
   );
   const [debug, setDebug] = useState(false);
   const [open, setOpen] = useState<SearchResult | null>(null);
@@ -58,7 +59,7 @@ export function SearchWorkspace() {
   const search = useSearch(params);
   const facets = useFacets();
   const summarize = useSummary();
-  const { recents, add: addRecent, clear: clearRecents } = useRecents();
+  const { addRecent } = useShell();
   const rotating = useRotatingExample();
 
   const pages = useMemo(() => search.data?.pages ?? [], [search.data]);
@@ -92,6 +93,26 @@ export function SearchWorkspace() {
     [params, refetch, run, addRecent],
   );
 
+  const reset = useCallback(() => {
+    setParams(null);
+    setInput("");
+    setOpen(null);
+    syncUrl(null);
+  }, []);
+
+  // The sidebar navigates with `?q=`; follow the URL when it changes under us.
+  useEffect(() => {
+    if (urlQuery.length >= MIN_QUERY) {
+      if (params?.query !== urlQuery) {
+        setInput(urlQuery);
+        run(urlQuery, null);
+      }
+    } else if (params !== null) {
+      reset();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlQuery]);
+
   const editFilters = (filters: SearchFilters, sort?: SearchSort | null) => {
     if (!params || !first) return;
     run(
@@ -102,13 +123,6 @@ export function SearchWorkspace() {
 
   const undo = () => {
     if (params) run(params.query, null);
-  };
-
-  const reset = () => {
-    setParams(null);
-    setInput("");
-    setOpen(null);
-    syncUrl(null);
   };
 
   const loadMore = async () => {
@@ -192,9 +206,43 @@ export function SearchWorkspace() {
     results.length,
   ]);
 
+  if (params === null) {
+    return (
+      <main className="flex flex-1 flex-col pb-10">
+        <p aria-live="polite" className="sr-only">
+          {live}
+        </p>
+        <StartPane>
+          <SearchBar
+            variant="hero"
+            value={input}
+            onChange={setInput}
+            onSubmit={submit}
+            busy={searching}
+            catalogueTotal={catalogueTotal}
+            totalMs={null}
+          >
+            <ChipButton
+              tint="lavender"
+              icon={<ShuffleIcon />}
+              onClick={() => submit(rotating)}
+              title={rotating}
+            >
+              Surprise me
+            </ChipButton>
+          </SearchBar>
+          <div className="mx-auto mt-9 max-w-[1040px]">
+            <ExampleChips variant="hero" rotating={rotating} onPick={submit} />
+          </div>
+        </StartPane>
+      </main>
+    );
+  }
+
   return (
     <>
       <SearchBar
+        variant="compact"
         value={input}
         onChange={setInput}
         onSubmit={submit}
@@ -202,7 +250,7 @@ export function SearchWorkspace() {
         catalogueTotal={catalogueTotal}
         totalMs={totalMs}
       >
-        {params && !unsupported ? (
+        {!unsupported ? (
           <ExampleChips
             variant="inline"
             rotating={rotating}
@@ -216,134 +264,108 @@ export function SearchWorkspace() {
         {live}
       </p>
 
-      {params === null ? (
-        <main className="pb-20">
-          <StartPane>
-            <ExampleChips variant="hero" rotating={rotating} onPick={submit} />
-          </StartPane>
-          <div className="mx-auto max-w-[1240px] px-5 pt-6 md:px-8">
-            <RecentSearches
-              recents={recents}
-              onPick={submit}
-              onClear={clearRecents}
-              align="center"
-            />
-          </div>
-        </main>
-      ) : (
-        <main className="mx-auto flex max-w-[1240px] flex-col gap-5 px-5 pb-20 pt-5 md:px-8">
-          {first && requested && !error ? (
-            <UnderstoodRow
-              query={params.query}
-              requested={requested}
-              understood={first.understood}
-              sort={sort}
-              semantic={semantic}
-              overrideMode={overrideMode}
+      <main className="mx-auto flex w-full max-w-[1240px] flex-1 flex-col gap-5 px-5 pb-16 pt-6 md:px-8">
+        {first && requested && !error ? (
+          <UnderstoodRow
+            query={params.query}
+            requested={requested}
+            understood={first.understood}
+            sort={sort}
+            semantic={semantic}
+            overrideMode={overrideMode}
+            busy={searching}
+            debug={debug}
+            onRemoveChip={(remaining) => editFilters(remaining)}
+            onRemoveSort={() => editFilters(requested, null)}
+            onUndo={undo}
+            onRetryAi={() => void search.refetch()}
+          />
+        ) : null}
+
+        {search.status === "pending" ? (
+          <LoadingGrid key={keyHash} count={6} />
+        ) : error ? (
+          unsupported ? (
+            <UnsupportedPane message={apiError?.message ?? null}>
+              <ExampleChips variant="hero" rotating={rotating} onPick={submit} />
+            </UnsupportedPane>
+          ) : (
+            <FailedPane
+              error={error}
               busy={searching}
-              debug={debug}
-              onRemoveChip={(remaining) => editFilters(remaining)}
-              onRemoveSort={() => editFilters(requested, null)}
-              onUndo={undo}
-              onRetryAi={() => void search.refetch()}
+              onRetry={() => void search.refetch()}
             />
-          ) : null}
-
-          {search.status === "pending" ? (
-            <LoadingGrid key={keyHash} count={6} />
-          ) : error ? (
-            unsupported ? (
-              <UnsupportedPane message={apiError?.message ?? null}>
-                <ExampleChips variant="hero" rotating={rotating} onPick={submit} />
-              </UnsupportedPane>
+          )
+        ) : first && requested ? (
+          results.length === 0 ? (
+            search.isPlaceholderData ? (
+              <LoadingGrid count={6} />
             ) : (
-              <FailedPane
-                error={error}
-                busy={searching}
-                onRetry={() => void search.refetch()}
+              <EmptyPane
+                requested={requested}
+                overrideMode={overrideMode}
+                onUndo={undo}
+                onReset={reset}
               />
             )
-          ) : first && requested ? (
-            results.length === 0 ? (
-              search.isPlaceholderData ? (
-                <LoadingGrid count={6} />
-              ) : (
-                <EmptyPane
-                  requested={requested}
-                  overrideMode={overrideMode}
-                  onUndo={undo}
-                  onReset={reset}
-                />
-              )
-            ) : (
-              <>
-                {first.meta.relaxed.length > 0 && !search.isPlaceholderData ? (
-                  <RelaxedBanner
-                    steps={first.meta.relaxed}
-                    requested={first.requested}
-                    applied={first.applied}
-                    busy={searching}
-                    onRestore={(filters) => editFilters(filters)}
-                  />
-                ) : null}
-
-                {search.isPlaceholderData ? (
-                  <LoadingLine />
-                ) : (
-                  <ResultsHeader
-                    page={first}
-                    shown={results.length}
-                    debug={debug}
-                    onToggleDebug={() => setDebug((value) => !value)}
-                    onSummarize={onSummarize}
-                    summarizing={summarize.isPending}
-                    summary={activeSummary}
-                  />
-                )}
-
-                <ResultGrid
-                  results={results}
+          ) : (
+            <>
+              {first.meta.relaxed.length > 0 && !search.isPlaceholderData ? (
+                <RelaxedBanner
+                  steps={first.meta.relaxed}
                   requested={first.requested}
-                  debug={debug}
-                  dimmed={search.isPlaceholderData}
-                  onOpen={setOpen}
+                  applied={first.applied}
+                  busy={searching}
+                  onRestore={(filters) => editFilters(filters)}
                 />
+              ) : null}
 
-                {!search.isPlaceholderData && last ? (
-                  <LoadMore
-                    hasMore={last.meta.hasMore}
-                    capped={last.meta.capped}
-                    limit={last.meta.limit}
-                    shown={results.length}
-                    total={first.meta.total}
-                    pageCount={pages.length}
-                    loading={search.isFetchingNextPage}
-                    error={pageError}
-                    onLoadMore={() => void loadMore()}
-                    onBackToTop={backToTop}
-                  />
-                ) : null}
-              </>
-            )
-          ) : null}
+              {search.isPlaceholderData ? (
+                <LoadingLine />
+              ) : (
+                <ResultsHeader
+                  page={first}
+                  shown={results.length}
+                  debug={debug}
+                  onToggleDebug={() => setDebug((value) => !value)}
+                  onSummarize={onSummarize}
+                  summarizing={summarize.isPending}
+                  summary={activeSummary}
+                />
+              )}
 
-          {recents.length > 0 ? (
-            <div className="mt-6 border-t border-rule pt-6">
-              <RecentSearches
-                recents={recents}
-                onPick={submit}
-                onClear={clearRecents}
+              <ResultGrid
+                results={results}
+                requested={first.requested}
+                debug={debug}
+                dimmed={search.isPlaceholderData}
+                onOpen={setOpen}
               />
-            </div>
-          ) : null}
 
-          {first && debug ? (
-            <p className="font-mono text-[10px] text-ink-3">
-              catalogue {formatCount(first.meta.catalogueSize)} vehicles
-            </p>
-          ) : null}
-        </main>
-      )}
+              {!search.isPlaceholderData && last ? (
+                <LoadMore
+                  hasMore={last.meta.hasMore}
+                  capped={last.meta.capped}
+                  limit={last.meta.limit}
+                  shown={results.length}
+                  total={first.meta.total}
+                  pageCount={pages.length}
+                  loading={search.isFetchingNextPage}
+                  error={pageError}
+                  onLoadMore={() => void loadMore()}
+                  onBackToTop={backToTop}
+                />
+              ) : null}
+            </>
+          )
+        ) : null}
+
+        {first && debug ? (
+          <p className="font-mono text-[10px] text-muted">
+            catalogue {formatCount(first.meta.catalogueSize)} vehicles
+          </p>
+        ) : null}
+      </main>
 
       {open ? (
         <VehicleSheet

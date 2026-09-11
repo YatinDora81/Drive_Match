@@ -8,16 +8,18 @@ import {
   type KeyboardEvent,
 } from "react";
 import { formatCount, formatMs } from "../../lib/format";
-import { SearchIcon } from "../icons";
-import { Kbd } from "../ui/Kbd";
+import { ArrowUpIcon, SearchIcon } from "../icons";
+import { IconButton } from "../ui/IconButton";
 
 type Props = {
+  variant: "hero" | "compact";
   value: string;
   onChange: (value: string) => void;
   onSubmit: (query: string) => void;
   busy: boolean;
   catalogueTotal: number | null;
   totalMs: number | null;
+  /** Rendered in the card's bottom row (hero) or under the field (compact). */
   children?: React.ReactNode;
 };
 
@@ -29,7 +31,11 @@ const isEditable = (target: EventTarget | null): boolean => {
   );
 };
 
+const CARD =
+  "rounded-card border border-input-card-line bg-input-card shadow-card transition-[border-color,box-shadow] duration-200 focus-within:border-primary-line focus-within:ring-[3px] focus-within:ring-primary-soft";
+
 export function SearchBar({
+  variant,
   value,
   onChange,
   onSubmit,
@@ -38,9 +44,10 @@ export function SearchBar({
   totalMs,
   children,
 }: Props) {
-  const inputRef = useRef<HTMLInputElement>(null);
+  const fieldRef = useRef<HTMLTextAreaElement & HTMLInputElement>(null);
   const id = useId();
-  const tooShort = value.trim().length > 0 && value.trim().length < 2;
+  const clean = value.trim();
+  const tooShort = clean.length > 0 && clean.length < 2;
 
   useEffect(() => {
     const onKey = (event: globalThis.KeyboardEvent) => {
@@ -49,96 +56,138 @@ export function SearchBar({
       if (isEditable(event.target)) return;
       if (document.querySelector('[role="dialog"][aria-modal="true"]')) return;
       event.preventDefault();
-      inputRef.current?.focus();
-      inputRef.current?.select();
+      fieldRef.current?.focus();
+      fieldRef.current?.select();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  const submit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const query = value.trim();
-    if (query.length < 2) {
-      inputRef.current?.focus();
+  const submit = (event?: FormEvent<HTMLFormElement>) => {
+    event?.preventDefault();
+    if (clean.length < 2) {
+      fieldRef.current?.focus();
       return;
     }
-    onSubmit(query);
+    onSubmit(clean);
   };
 
-  const onKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-    if (event.key !== "Escape") return;
-    event.preventDefault();
-    onChange("");
+  const onKeyDown = (
+    event: KeyboardEvent<HTMLTextAreaElement | HTMLInputElement>,
+  ) => {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      onChange("");
+      return;
+    }
+    if (variant === "hero" && event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      submit();
+    }
   };
 
   const footerBits: string[] = [];
   if (catalogueTotal !== null)
     footerBits.push(`Searching ${formatCount(catalogueTotal)} cars`);
   if (totalMs !== null) footerBits.push(formatMs(totalMs));
+  const hint = tooShort
+    ? "Type at least two characters."
+    : footerBits.length > 0
+      ? footerBits.join(" · ")
+      : "Plain words. No filters to learn.";
+
+  const shared = {
+    ref: fieldRef,
+    id,
+    name: "q",
+    value,
+    onChange: (event: { target: { value: string } }) => onChange(event.target.value),
+    onKeyDown,
+    placeholder: "Automatic SUV under 15 lakh in Pune with a sunroof…",
+    autoComplete: "off",
+    spellCheck: false,
+    maxLength: 500,
+    "aria-describedby": `${id}-hint`,
+    "aria-invalid": tooShort || undefined,
+  } as const;
+
+  if (variant === "hero") {
+    return (
+      <form
+        role="search"
+        onSubmit={submit}
+        noValidate
+        className={`${CARD} mx-auto mt-9 w-full max-w-[1040px] p-3 md:p-4`}
+      >
+        <label htmlFor={id} className="sr-only">
+          Describe the car you want
+        </label>
+        <div className="rounded-field border border-field-line bg-field px-5 pb-3 pt-4">
+          <textarea
+            {...shared}
+            rows={4}
+            enterKeyHint="search"
+            className="block w-full resize-none bg-transparent text-[15.5px] leading-[1.55] text-ink outline-none placeholder:text-faint"
+          />
+        </div>
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
+            {children}
+            <span id={`${id}-hint`} className="text-[12px] text-muted">
+              {hint}
+            </span>
+          </div>
+          <IconButton
+            type="submit"
+            variant="primary"
+            label={busy ? "Searching" : "Search"}
+            disabled={busy || clean.length < 2}
+            className="ml-auto"
+          >
+            <ArrowUpIcon className="size-[18px]" />
+          </IconButton>
+        </div>
+      </form>
+    );
+  }
 
   return (
-    <div className="sticky top-0 z-[300] border-b border-rule bg-paper/95 backdrop-blur">
-      <div className="mx-auto max-w-[1240px] px-5 pb-2.5 pt-3.5 md:px-8">
-        <form role="search" onSubmit={submit} noValidate>
-          <label
-            htmlFor={id}
-            className="mb-1.5 block text-[11.5px] font-medium tracking-[-0.004em] text-ink-2"
+    <div className="sticky top-16 z-[250] px-5 pt-2 md:px-8">
+      <form
+        role="search"
+        onSubmit={submit}
+        noValidate
+        className={`${CARD} mx-auto max-w-[1240px] p-2`}
+      >
+        <label htmlFor={id} className="sr-only">
+          Describe the car you want
+        </label>
+        <div className="flex items-center gap-2.5 rounded-field border border-field-line bg-field py-1 pl-4 pr-1">
+          <SearchIcon className="size-4 shrink-0 text-muted" />
+          <input
+            {...shared}
+            type="text"
+            enterKeyHint="search"
+            className="min-w-0 flex-1 bg-transparent py-2 text-[15px] leading-[1.45] text-ink outline-none placeholder:text-faint"
+          />
+          <IconButton
+            type="submit"
+            variant="primary"
+            label={busy ? "Searching" : "Search"}
+            disabled={busy || clean.length < 2}
+            className="size-8"
           >
-            Describe the car you want
-          </label>
-          <div className="flex items-center gap-2.5 rounded-xl border border-rule-2 bg-paper-2 py-1.5 pl-[15px] pr-1.5 transition-[border-color,box-shadow] duration-200 focus-within:border-accent focus-within:ring-[3px] focus-within:ring-accent-bg">
-            <SearchIcon className="size-[16px] shrink-0 text-ink-3" />
-            <input
-              ref={inputRef}
-              id={id}
-              name="q"
-              type="text"
-              value={value}
-              onChange={(event) => onChange(event.target.value)}
-              onKeyDown={onKeyDown}
-              placeholder="Automatic SUV under 15 lakh in Pune with a sunroof…"
-              autoComplete="off"
-              spellCheck={false}
-              enterKeyHint="search"
-              maxLength={500}
-              aria-describedby={`${id}-hint`}
-              aria-invalid={tooShort || undefined}
-              className="min-w-0 flex-1 bg-transparent py-2 text-[16px] leading-[1.45] tracking-[-0.01em] text-ink outline-none placeholder:text-ink-3 md:text-[17px]"
-            />
-            <button
-              type="submit"
-              className="inline-flex h-9 shrink-0 items-center gap-2 rounded-lg bg-accent px-3.5 text-[12.5px] font-medium text-accent-fg transition-[background-color,opacity] duration-[180ms] hover:bg-accent-2 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-accent-bg disabled:cursor-default disabled:opacity-60"
-            >
-              {busy ? "Searching…" : "Search"}
-            </button>
-          </div>
-          <div
-            id={`${id}-hint`}
-            className="mt-2 flex flex-wrap items-center justify-between gap-x-4 gap-y-1 font-mono text-[10px] text-ink-3"
-          >
-            <span>
-              {tooShort
-                ? "Type at least two characters."
-                : footerBits.length > 0
-                  ? footerBits.join(" · ")
-                  : "Plain words. No filters to learn."}
-            </span>
-            <span className="flex items-center gap-2.5">
-              <span className="flex items-center gap-1.5">
-                <Kbd>/</Kbd> focus
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Kbd>↵</Kbd> search
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Kbd>esc</Kbd> clear
-              </span>
-            </span>
-          </div>
-        </form>
-        {children ? <div className="mt-1.5">{children}</div> : null}
-      </div>
+            <ArrowUpIcon className="size-4" />
+          </IconButton>
+        </div>
+        <div
+          id={`${id}-hint`}
+          className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 px-2 pb-0.5 pt-1.5 text-[11.5px] text-muted"
+        >
+          {children ?? <span />}
+          <span className="ml-auto">{hint}</span>
+        </div>
+      </form>
     </div>
   );
 }
