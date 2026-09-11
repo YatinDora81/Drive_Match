@@ -20,7 +20,7 @@ type Props = {
 const UNIT_WORD = { L: "Lakh", Cr: "Crore", "": "" } as const;
 
 const PICTURE_PILL =
-  "absolute rounded-full bg-card px-2.5 py-1 text-[11px] leading-none font-bold";
+  "absolute rounded-full bg-card px-2.5 py-1 text-[11.5px] leading-none font-bold";
 
 type Stat = { label: string; value: string };
 
@@ -59,7 +59,7 @@ export function VehicleCard({ result, requested, debug, index, crown, onOpen }: 
     <article
       aria-labelledby={titleId}
       style={toneStyle(FUEL_TONE[vehicle.fuelType])}
-      className="relative flex h-full flex-col overflow-hidden rounded-panel border border-line bg-card shadow-card transition-[transform,box-shadow] duration-200 ease-soft hover:-translate-y-[3px] hover:shadow-up has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-brand"
+      className="relative flex h-full flex-col overflow-hidden rounded-panel border border-line bg-card shadow-card transition-[translate,box-shadow] duration-200 ease-soft hover:-translate-y-0.5 hover:shadow-up has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-brand"
     >
       <div className="relative grid h-32 place-items-center bg-[var(--tone-soft)] text-[var(--tone)]">
         <CarArt bodyType={vehicle.bodyType} className="w-[62%] max-w-[190px]" />
@@ -70,20 +70,20 @@ export function VehicleCard({ result, requested, debug, index, crown, onOpen }: 
           {labelEnum(vehicle.bodyType)}
         </span>
         {crown ? (
-          <span className="absolute bottom-2.5 left-2.5 inline-flex items-center gap-1 rounded-full bg-brand px-2.5 py-1 text-[11px] leading-none font-bold text-on-brand">
+          <span className="absolute bottom-2.5 left-2.5 inline-flex items-center gap-1 rounded-full bg-brand px-2.5 py-1 text-[11.5px] leading-none font-bold text-on-brand">
             <SparkIcon className="size-3" />
             {crown}
           </span>
         ) : null}
       </div>
 
-      <div className="flex flex-1 flex-col px-4 pt-3.5 pb-4">
+      <div className="flex flex-1 flex-col p-4">
         <p className="flex items-baseline gap-1.5 text-ink">
-          <span className="text-[26px] leading-none font-extrabold tracking-tight tabular-nums">
+          <span className="text-[26px] leading-none font-extrabold tracking-[-0.03em] tabular-nums">
             ₹{price.value}
           </span>
           {price.unit ? (
-            <span className="text-[13px] font-bold text-ink-3">{UNIT_WORD[price.unit]}</span>
+            <span className="text-[13.5px] font-bold text-ink-3">{UNIT_WORD[price.unit]}</span>
           ) : null}
         </p>
         <p className="mt-1 text-[11.5px] text-ink-3 tabular-nums">
@@ -92,7 +92,7 @@ export function VehicleCard({ result, requested, debug, index, crown, onOpen }: 
 
         <h3
           id={titleId}
-          className="mt-2.5 text-[16px] leading-snug font-bold tracking-[-0.01em] text-ink"
+          className="mt-3 text-[16px] leading-snug font-bold tracking-[-0.01em] text-ink"
         >
           <button
             type="button"
@@ -108,7 +108,7 @@ export function VehicleCard({ result, requested, debug, index, crown, onOpen }: 
           {vehicle.variant} · {labelEnum(vehicle.transmission)} · {vehicle.city}
         </p>
 
-        <dl className="mt-3.5 grid grid-cols-3 border-y border-line py-2.5">
+        <dl className="mt-4 grid grid-cols-3 border-y border-line py-3">
           {stats.map((stat, i) => (
             <div
               key={stat.label}
@@ -116,8 +116,8 @@ export function VehicleCard({ result, requested, debug, index, crown, onOpen }: 
                 i > 0 ? "border-l border-line pl-3" : ""
               }`}
             >
-              <dt className="mt-0.5 truncate text-[11px] text-ink-3">{stat.label}</dt>
-              <dd className="truncate text-[14px] leading-tight font-bold text-ink tabular-nums">
+              <dt className="mt-0.5 truncate text-[11.5px] text-ink-3">{stat.label}</dt>
+              <dd className="truncate text-[15px] leading-tight font-extrabold text-ink tabular-nums">
                 {stat.value}
               </dd>
             </div>
@@ -125,13 +125,15 @@ export function VehicleCard({ result, requested, debug, index, crown, onOpen }: 
         </dl>
 
         {violations.length > 0 ? (
-          <p className="mt-3 flex items-start gap-1.5 rounded-field bg-rose-soft px-2.5 py-2 text-[12px] leading-snug font-semibold text-rose">
+          <p className="mt-3 flex items-start gap-1.5 rounded-field bg-sun-soft px-3 py-2 text-[12.5px] leading-snug font-semibold text-sun">
             <WarningIcon className="mt-px size-3.5 shrink-0" />
-            <span>{violations.map((v) => v.caption).join(" · ")}</span>
+            <span className="min-w-0 tabular-nums">
+              {violations.map((v) => v.caption).join(" · ")}
+            </span>
           </p>
         ) : null}
 
-        <div className="mt-auto flex flex-wrap items-center justify-between gap-2 pt-3">
+        <div className="mt-auto flex flex-wrap items-center justify-between gap-2 pt-4">
           <SafetyBadge rating={vehicle.safetyRating} />
           {features.length > 0 ? (
             <ul aria-label="Features" className="flex min-w-0 flex-wrap justify-end gap-1.5">
@@ -141,7 +143,7 @@ export function VehicleCard({ result, requested, debug, index, crown, onOpen }: 
                   <li
                     key={feature}
                     title={feature}
-                    className={`max-w-[9.5rem] truncate rounded-md px-2 py-1 text-[11px] leading-none font-semibold ${
+                    className={`max-w-[9.5rem] truncate rounded-full px-2.5 py-1 text-[11.5px] leading-none font-semibold ${
                       hit ? "bg-electric-soft text-electric" : "bg-sunk text-ink-3"
                     }`}
                   >

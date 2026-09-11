@@ -88,7 +88,7 @@ function ParseDisclosure({ query }: { query: string }) {
       className="mt-3"
       onToggle={(event) => setOpen(event.currentTarget.open)}
     >
-      <summary className="cursor-pointer text-[12px] font-semibold text-ink-3 transition-colors hover:text-ink">
+      <summary className="inline-flex min-h-9 cursor-pointer items-center text-[12.5px] font-semibold text-ink-3 transition-colors hover:text-ink">
         Show parse
       </summary>
       <pre className="scroll-thin mt-2 max-h-[320px] overflow-auto rounded-field border border-line bg-sunk p-3 font-mono text-[11px] leading-[1.55] text-ink-2">
@@ -131,7 +131,7 @@ export function UnderstoodPanel({
       <div className="flex flex-wrap items-center gap-2.5">
         <span
           aria-hidden="true"
-          className="grid size-7 shrink-0 place-items-center rounded-[9px] bg-brand-soft text-brand"
+          className="grid size-7 shrink-0 place-items-center rounded-[8px] bg-brand-soft text-brand"
         >
           <SparkIcon className="size-3.5" />
         </span>
@@ -159,7 +159,7 @@ export function UnderstoodPanel({
           </span>
         ) : null}
 
-        <span className="ml-auto text-[12px] text-ink-3 tabular-nums">
+        <span className="ml-auto min-w-0 truncate text-[12.5px] text-ink-3 tabular-nums">
           {whoParsed(understood, meta, mode)}
         </span>
       </div>
@@ -213,17 +213,17 @@ export function UnderstoodPanel({
       )}
 
       {understood.notes ? (
-        <p className="mt-3 text-[13px] leading-[1.55] text-ink-3">{understood.notes}</p>
+        <p className="mt-3 text-[13.5px] leading-relaxed text-ink-3">{understood.notes}</p>
       ) : null}
       {understood.warnings.length > 0 ? (
         <div className="mt-2 flex flex-col gap-1">
           {understood.warnings.map((warning) => (
             <p
               key={warning}
-              className="flex items-start gap-1.5 text-[12.5px] leading-[1.5] text-sun"
+              className="flex items-start gap-1.5 text-[12.5px] leading-normal text-sun"
             >
               <WarningIcon className="mt-[3px] size-3.5 shrink-0" />
-              <span>{warning}</span>
+              <span className="min-w-0">{warning}</span>
             </p>
           ))}
         </div>

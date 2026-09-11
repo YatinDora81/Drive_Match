@@ -2,6 +2,7 @@
 
 import { formatCount, formatMs, plural, sortLabel } from "../../lib/format";
 import type { SearchResponse } from "../../lib/types";
+import { Pill } from "../ui/Pill";
 import { Toggle } from "../ui/Toggle";
 
 type Props = {
@@ -14,9 +15,6 @@ type Props = {
   exactOnly: boolean;
   onToggleExact: () => void;
 };
-
-const PILL =
-  "inline-flex items-center gap-1 rounded-full border border-line bg-card px-2.5 py-1 text-[11.5px] font-semibold text-ink-2";
 
 function Headline({ page, shown }: { page: SearchResponse; shown: number }) {
   const { meta } = page;
@@ -73,23 +71,26 @@ export function ResultsHeader({
     <div className="animate-fade">
       <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-3">
         <div className="min-w-0">
-          <h2
-            aria-live="polite"
-            className="text-[22px] leading-tight font-extrabold tracking-[-0.03em] text-ink tabular-nums"
-          >
+          <h2 className="text-[22px] leading-tight font-extrabold tracking-[-0.03em] text-balance text-ink tabular-nums">
             <Headline page={page} shown={shown} />
           </h2>
-          <ul aria-label="How these results were found" className="mt-2 flex flex-wrap gap-1.5">
-            <li className={PILL}>{rankLabel(page)}</li>
-            <li className={PILL}>
-              {meta.mode === "vector" ? "Semantic + filters" : "Filters only"}
+          <ul aria-label="How these results were found" className="mt-2.5 flex flex-wrap gap-1.5">
+            <li>
+              <Pill>{rankLabel(page)}</Pill>
             </li>
-            <li className={`${PILL} tabular-nums`}>
-              <b className="text-ink">{formatMs(meta.timings.totalMs)}</b> total
+            <li>
+              <Pill>{meta.mode === "vector" ? "Semantic + filters" : "Filters only"}</Pill>
+            </li>
+            <li>
+              <Pill className="tabular-nums">
+                <span>
+                  <b className="text-ink">{formatMs(meta.timings.totalMs)}</b> total
+                </span>
+              </Pill>
             </li>
             {meta.degraded ? (
-              <li className="inline-flex items-center rounded-full border border-sun/30 bg-sun-soft px-2.5 py-1 text-[11.5px] font-semibold text-sun">
-                Fallback path
+              <li>
+                <Pill tone="sun">Fallback path</Pill>
               </li>
             ) : null}
           </ul>
@@ -111,7 +112,7 @@ export function ResultsHeader({
             type="button"
             aria-pressed={debug}
             onClick={onToggleDebug}
-            className={`h-8 rounded-full px-3 font-mono text-[11px] transition-colors ${
+            className={`h-9 rounded-full px-3 font-mono text-[11px] transition-colors duration-150 ${
               debug ? "bg-brand-soft text-brand" : "text-ink-3 hover:bg-sunk hover:text-ink"
             }`}
           >

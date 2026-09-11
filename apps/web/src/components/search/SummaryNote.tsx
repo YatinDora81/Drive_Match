@@ -31,8 +31,8 @@ export function SummaryNote({ state, text, model, onRetry }: Props) {
         >
           <SparkIcon className="size-3.5" />
         </span>
-        <h3 className="text-[14px] font-bold text-ink">AI summary</h3>
-        <span className="ml-auto min-w-0 truncate text-[11.5px] text-ink-3">
+        <h3 className="shrink-0 text-[15px] font-bold text-ink">AI summary</h3>
+        <span className="ml-auto min-w-0 truncate text-[12.5px] text-ink-3">
           written by {model}
         </span>
       </header>

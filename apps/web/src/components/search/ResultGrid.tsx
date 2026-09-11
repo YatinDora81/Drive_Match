@@ -24,7 +24,7 @@ export function ResultGrid({ results, requested, debug, dimmed, crown, onOpen }:
         <li
           key={result.vehicle.id}
           className="animate-rise"
-          style={{ animationDelay: `${Math.min(index * 26, 300)}ms` }}
+          style={{ animationDelay: `${(index % 12) * 24}ms` }}
         >
           <VehicleCard
             result={result}

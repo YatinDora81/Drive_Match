@@ -4,6 +4,7 @@ import { ApiError } from "../../lib/api";
 import { WarningIcon } from "../icons";
 import { Button } from "../ui/Button";
 import { EmptyState } from "../ui/EmptyState";
+import { Pill } from "../ui/Pill";
 
 type Props = {
   error: unknown;
@@ -58,10 +59,10 @@ export function FailedPane({ error, onRetry, busy = false }: Props) {
         tone="rose"
         icon={<WarningIcon />}
         eyebrow={
-          <span className="inline-block rounded-full bg-rose-soft px-2.5 py-1 font-mono text-[11px] text-rose">
+          <Pill tone="rose" mono>
             {code}
             {apiError?.status ? ` · ${apiError.status}` : ""}
-          </span>
+          </Pill>
         }
         title={rateLimited ? "Slow down a moment" : message}
         actions={

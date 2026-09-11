@@ -49,7 +49,7 @@ export function FactTiles({ results, total }: Props) {
         ))}
       </ul>
       {partial ? (
-        <p className="mt-2 text-[12px] text-ink-3 tabular-nums">
+        <p className="mt-2 text-[12.5px] text-ink-3 tabular-nums">
           Across the first {formatCount(results.length)} of {formatCount(total)}. Load more to
           widen these.
         </p>

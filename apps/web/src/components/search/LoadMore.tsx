@@ -4,6 +4,7 @@ import { ApiError } from "../../lib/api";
 import { formatCount, plural } from "../../lib/format";
 import { ArrowUpIcon } from "../icons";
 import { Button } from "../ui/Button";
+import { Pill } from "../ui/Pill";
 
 type Props = {
   hasMore: boolean;
@@ -34,10 +35,10 @@ export function ContinuationError({ error }: { error: unknown }) {
   return (
     <div role="alert" className="flex max-w-[440px] flex-col items-center gap-2 text-center">
       {apiError ? (
-        <span className="rounded-full bg-rose-soft px-2.5 py-1 font-mono text-[11px] text-rose">
+        <Pill tone="rose" mono>
           {apiError.code}
           {apiError.status ? ` · ${apiError.status}` : ""}
-        </span>
+        </Pill>
       ) : null}
       <p className="text-[13.5px] leading-relaxed text-ink-2">{text}</p>
       {apiError?.requestId ? (
@@ -65,7 +66,7 @@ export function LoadMore({
 
   return (
     <div className="mt-4 flex flex-col items-center gap-3 text-center">
-      <p className="text-[12px] font-semibold text-ink-3 tabular-nums">
+      <p className="text-[12.5px] font-semibold text-ink-3 tabular-nums">
         {total !== null
           ? `Showing ${formatCount(shown)} of ${formatCount(total)}`
           : `Showing ${formatCount(shown)}`}
@@ -74,7 +75,14 @@ export function LoadMore({
       {error ? <ContinuationError error={error} /> : null}
 
       {hasMore ? (
-        <Button variant="outline" size="lg" onClick={onLoadMore} disabled={loading}>
+        <Button
+          variant="outline"
+          size="lg"
+          onClick={onLoadMore}
+          disabled={loading}
+          aria-busy={loading}
+          className="tabular-nums"
+        >
           {loading
             ? "Loading…"
             : error

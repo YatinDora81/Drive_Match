@@ -133,7 +133,7 @@ export function VehicleSheet({ seed, matchedFeatures, requested, onClose }: Prop
       <div
         aria-hidden="true"
         onClick={onClose}
-        className="animate-fade absolute inset-0 bg-[rgba(15,18,28,0.45)]"
+        className="animate-fade absolute inset-0 bg-scrim"
       />
       <div
         ref={panelRef}
@@ -143,7 +143,7 @@ export function VehicleSheet({ seed, matchedFeatures, requested, onClose }: Prop
         style={toneStyle(FUEL_TONE[vehicle.fuelType])}
         className="animate-sheet-up absolute inset-x-2 bottom-0 flex max-h-[88dvh] flex-col overflow-hidden rounded-t-panel bg-card shadow-sheet sm:animate-slide-in sm:inset-x-auto sm:inset-y-3 sm:right-3 sm:max-h-none sm:w-[450px] sm:rounded-panel"
       >
-        <div className="flex items-center justify-between gap-3 border-b border-line px-5 py-3.5">
+        <div className="flex items-center justify-between gap-3 border-b border-line py-3 pr-3 pl-5">
           <h2
             id={titleId}
             className="min-w-0 truncate text-[16px] font-extrabold tracking-[-0.01em] text-ink"
@@ -155,7 +155,7 @@ export function VehicleSheet({ seed, matchedFeatures, requested, onClose }: Prop
           </IconButton>
         </div>
 
-        <div className="scroll-thin min-h-0 flex-1 overflow-y-auto px-5 pb-6 pt-5">
+        <div className="scroll-thin min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pt-5 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
           <div className="grid h-40 place-items-center rounded-tile bg-[var(--tone-soft)] text-[var(--tone)]">
             <CarArt bodyType={vehicle.bodyType} className="w-[58%] max-w-[220px]" />
           </div>
@@ -165,7 +165,7 @@ export function VehicleSheet({ seed, matchedFeatures, requested, onClose }: Prop
               <div className="text-[32px] font-extrabold leading-none tracking-[-0.03em] text-ink tabular-nums">
                 {formatInr(vehicle.price)}
               </div>
-              <div className="mt-1.5 text-[12px] text-ink-3 tabular-nums">
+              <div className="mt-1.5 text-[12.5px] text-ink-3 tabular-nums">
                 ₹{groupIndian(vehicle.price)}
               </div>
             </div>
@@ -181,23 +181,23 @@ export function VehicleSheet({ seed, matchedFeatures, requested, onClose }: Prop
           {violations.length > 0 ? (
             <section
               aria-label="Against what you asked for"
-              className="mt-4 rounded-tile border border-sun/30 bg-sun-soft px-4 py-3"
+              className="mt-4 rounded-tile border border-sun/30 bg-sun-soft p-4"
             >
               <h3 className="flex items-center gap-1.5 text-[13.5px] font-bold text-sun">
                 <WarningIcon className="size-4 shrink-0" />
                 Against what you asked for
               </h3>
-              <ul className="mt-1.5 space-y-1">
+              <ul className="mt-2 space-y-1">
                 {violations.map((violation) => (
                   <li
                     key={violation.field}
-                    className="flex items-start gap-2 text-[13px] text-ink-2"
+                    className="flex items-start gap-2 text-[13.5px] text-ink-2"
                   >
                     <span
                       aria-hidden="true"
-                      className="mt-[7px] size-1.5 shrink-0 rounded-full bg-sun"
+                      className="mt-2 size-1.5 shrink-0 rounded-full bg-sun"
                     />
-                    <span className="tabular-nums">{violation.caption}</span>
+                    <span className="min-w-0 tabular-nums">{violation.caption}</span>
                   </li>
                 ))}
               </ul>
@@ -220,17 +220,17 @@ export function VehicleSheet({ seed, matchedFeatures, requested, onClose }: Prop
 
           {vehicle.description ? (
             <section className="mt-6" aria-labelledby={`${titleId}-about`}>
-              <h3 id={`${titleId}-about`} className="text-[12px] font-bold text-ink-3">
+              <h3 id={`${titleId}-about`} className="text-[11.5px] font-bold text-ink-3">
                 About this car
               </h3>
-              <p className="mt-1.5 text-[14px] leading-relaxed text-ink-2">
+              <p className="mt-2 text-[15px] leading-relaxed text-ink-2">
                 {vehicle.description}
               </p>
             </section>
           ) : null}
 
           <section className="mt-6" aria-labelledby={`${titleId}-features`}>
-            <h3 id={`${titleId}-features`} className="text-[12px] font-bold text-ink-3">
+            <h3 id={`${titleId}-features`} className="text-[11.5px] font-bold text-ink-3">
               Features · <span className="tabular-nums">{vehicle.features.length}</span>
             </h3>
             {vehicle.features.length > 0 ? (
@@ -238,7 +238,7 @@ export function VehicleSheet({ seed, matchedFeatures, requested, onClose }: Prop
                 {vehicle.features.map((feature) => (
                   <li
                     key={feature}
-                    className={`rounded-full px-2.5 py-1 text-[12px] font-semibold ${
+                    className={`rounded-full px-2.5 py-1 text-[12.5px] font-semibold ${
                       matched.has(feature)
                         ? "bg-electric-soft text-electric"
                         : "bg-sunk text-ink-2"
@@ -249,7 +249,7 @@ export function VehicleSheet({ seed, matchedFeatures, requested, onClose }: Prop
                 ))}
               </ul>
             ) : (
-              <p className="mt-1.5 text-[13px] text-ink-3">No features listed.</p>
+              <p className="mt-2 text-[13.5px] text-ink-3">No features listed.</p>
             )}
           </section>
 
@@ -259,7 +259,7 @@ export function VehicleSheet({ seed, matchedFeatures, requested, onClose }: Prop
             {isFetching && isPlaceholderData ? " · refreshing…" : ""}
           </p>
           {isError ? (
-            <p className="mt-1 text-[12px] text-rose">
+            <p role="status" className="mt-1 text-[12.5px] text-rose">
               Could not refresh this listing. Showing the copy from the search
               results.
             </p>
