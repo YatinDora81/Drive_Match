@@ -1,0 +1,51 @@
+{
+  "$schema": "https://turborepo.dev/schema.json",
+  "ui": "tui",
+  "globalDependencies": [".env"],
+  "globalEnv": [
+    "DATABASE_URL",
+    "DIRECT_DATABASE_URL",
+    "QDRANT_URL",
+    "QDRANT_API_KEY",
+    "QDRANT_COLLECTION",
+    "GEMINI_API_KEYS",
+    "EMBEDDING_MODEL",
+    "EMBEDDING_DIMENSIONS",
+    "GENERATION_MODEL",
+    "UTILITY_MODEL",
+    "PORT",
+    "WEB_ORIGIN",
+    "LOG_LEVEL",
+    "NODE_ENV",
+    "FETCH_TIMEOUT_MS",
+    "SEARCH_DEFAULT_LIMIT",
+    "SEARCH_MAX_LIMIT",
+    "SEMANTIC_SCORE_THRESHOLD",
+    "TRUST_PROXY",
+    "PARSE_CACHE_TTL_MS",
+    "INDEX_CONCURRENCY",
+    "NEXT_PUBLIC_API_URL"
+  ],
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build", "@repo/db#generate"],
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "outputs": [".next/**", "!.next/cache/**", "!.next/dev/**"]
+    },
+    "lint": { "dependsOn": ["^lint"] },
+    "test": { "dependsOn": ["@repo/db#generate"], "cache": false },
+    "check-types": { "dependsOn": ["^check-types", "@repo/db#generate"] },
+    "dev": {
+      "cache": false,
+      "persistent": true,
+      "dependsOn": ["@repo/db#generate"]
+    },
+    "generate": { "cache": false, "outputs": ["generated/**", "data/**"] },
+    "migrate": { "cache": false, "persistent": true },
+    "deploy": { "cache": false },
+    "studio": { "cache": false, "persistent": true },
+    "seed": { "cache": false, "dependsOn": ["@repo/db#generate"] },
+    "index": { "cache": false, "dependsOn": ["@repo/db#generate"] },
+    "qdrant:init": { "cache": false }
+  }
+}

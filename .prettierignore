@@ -1,0 +1,4 @@
+packages/catalogue/data/
+packages/db/generated/
+**/.next/
+bun.lock
