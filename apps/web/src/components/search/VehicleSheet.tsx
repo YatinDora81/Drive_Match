@@ -2,35 +2,77 @@
 
 import { useEffect, useId, useRef } from "react";
 import { useVehicle } from "../../hooks/useVehicle";
-import { formatInr, formatKm, labelEnum, plural, titleOf } from "../../lib/format";
-import type { Vehicle } from "../../lib/types";
-import { CloseIcon } from "../icons";
+import {
+  formatInr,
+  formatKm,
+  groupIndian,
+  labelEnum,
+  plural,
+  titleOf,
+} from "../../lib/format";
+import { FUEL_TONE, toneStyle } from "../../lib/tones";
+import type { SearchFilters, Vehicle } from "../../lib/types";
+import { violationsFor } from "../../lib/violations";
+import { CloseIcon, WarningIcon } from "../icons";
 import { IconButton } from "../ui/IconButton";
-import { BodyGlyph } from "./BodyGlyph";
-import { NcapStars } from "./NcapStars";
+import { CarArt } from "./CarArt";
+import { SafetyBadge } from "./SafetyBadge";
 
 type Props = {
   seed: Vehicle;
   matchedFeatures: string[];
+  requested: SearchFilters;
   onClose: () => void;
 };
 
 const FOCUSABLE =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
-function Fact({ label, value }: { label: string; value: string | null }) {
-  if (value === null) return null;
-  return (
-    <div className="min-w-0">
-      <dt className="text-[11px] font-medium uppercase tracking-[0.06em] text-muted">
-        {label}
-      </dt>
-      <dd className="mt-0.5 truncate text-[13px] text-ink">{value}</dd>
-    </div>
-  );
+type Row = { label: string; value: string | null };
+
+function listedDate(createdAt: string): string | null {
+  const listed = new Date(createdAt);
+  if (Number.isNaN(listed.getTime())) return null;
+  return listed.toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
 }
 
-export function VehicleSheet({ seed, matchedFeatures, onClose }: Props) {
+function rowsFor(vehicle: Vehicle): Row[] {
+  const isEv = vehicle.fuelType === "ELECTRIC";
+  const unit = (value: number | null, suffix: string) =>
+    value === null ? null : `${groupIndian(value)} ${suffix}`;
+
+  return [
+    { label: "Year", value: String(vehicle.year) },
+    { label: "Driven", value: formatKm(vehicle.kmDriven) },
+    {
+      label: "Owners",
+      value: `${vehicle.ownerCount} ${plural(vehicle.ownerCount, "owner")}`,
+    },
+    { label: "City", value: vehicle.city || null },
+    { label: "Fuel", value: labelEnum(vehicle.fuelType) },
+    { label: "Gearbox", value: labelEnum(vehicle.transmission) },
+    { label: "Body", value: labelEnum(vehicle.bodyType) },
+    { label: "Seats", value: String(vehicle.seats) },
+    ...(isEv
+      ? [
+          { label: "Battery", value: unit(vehicle.batteryKwh, "kWh") },
+          { label: "Range", value: unit(vehicle.rangeKm, "km") },
+        ]
+      : [
+          { label: "Engine", value: unit(vehicle.engineCc, "cc") },
+          { label: "Mileage", value: unit(vehicle.mileageKmpl, "kmpl") },
+        ]),
+    { label: "Power", value: unit(vehicle.powerBhp, "bhp") },
+    { label: "Colour", value: vehicle.color || null },
+    { label: "Registration", value: vehicle.registrationState || null },
+  ];
+}
+
+export function VehicleSheet({ seed, matchedFeatures, requested, onClose }: Props) {
   const { data, isFetching, isError, isPlaceholderData } = useVehicle(
     seed.id,
     seed,
@@ -53,24 +95,19 @@ export function VehicleSheet({ seed, matchedFeatures, onClose }: Props) {
         onClose();
         return;
       }
-      if (event.key !== "Tab" || !panelRef.current) return;
+      const panel = panelRef.current;
+      if (event.key !== "Tab" || !panel) return;
       const items = Array.from(
-        panelRef.current.querySelectorAll<HTMLElement>(FOCUSABLE),
+        panel.querySelectorAll<HTMLElement>(FOCUSABLE),
       ).filter((el) => el.tabIndex !== -1);
       const first = items[0];
       const last = items[items.length - 1];
       if (!first || !last) return;
       const active = document.activeElement;
-      if (
-        event.shiftKey &&
-        (active === first || !panelRef.current.contains(active))
-      ) {
+      if (event.shiftKey && (active === first || !panel.contains(active))) {
         event.preventDefault();
         last.focus();
-      } else if (
-        !event.shiftKey &&
-        (active === last || !panelRef.current.contains(active))
-      ) {
+      } else if (!event.shiftKey && (active === last || !panel.contains(active))) {
         event.preventDefault();
         first.focus();
       }
@@ -84,138 +121,127 @@ export function VehicleSheet({ seed, matchedFeatures, onClose }: Props) {
     };
   }, [onClose]);
 
-  const isEv = vehicle.fuelType === "ELECTRIC";
   const matched = new Set(matchedFeatures);
-  const listed = new Date(vehicle.createdAt);
-  const listedText = Number.isNaN(listed.getTime())
-    ? null
-    : listed.toLocaleDateString("en-IN", {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-      });
+  const violations = violationsFor(vehicle, requested);
+  const listedText = listedDate(vehicle.createdAt);
+  const rows = rowsFor(vehicle).filter(
+    (row): row is { label: string; value: string } => row.value !== null,
+  );
 
   return (
     <div className="fixed inset-0 z-[500]">
       <div
         aria-hidden="true"
         onClick={onClose}
-        className="animate-fade absolute inset-0 bg-black/20 dark:bg-black/55"
+        className="animate-fade absolute inset-0 bg-[rgba(15,18,28,0.45)]"
       />
       <div
         ref={panelRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="animate-pop absolute inset-y-0 right-0 flex w-full max-w-[480px] flex-col bg-card shadow-sheet md:inset-y-3 md:right-3 md:rounded-card md:border md:border-line"
+        style={toneStyle(FUEL_TONE[vehicle.fuelType])}
+        className="animate-sheet-up absolute inset-x-2 bottom-0 flex max-h-[88dvh] flex-col overflow-hidden rounded-t-panel bg-card shadow-sheet sm:animate-slide-in sm:inset-x-auto sm:inset-y-3 sm:right-3 sm:max-h-none sm:w-[450px] sm:rounded-panel"
       >
-        <div className="flex items-start justify-between gap-3 border-b border-line px-5 py-4">
-          <div className="min-w-0">
-            <div className="text-[26px] font-bold leading-none tracking-[-0.025em] text-ink">
-              {formatInr(vehicle.price)}
-            </div>
-            <h2
-              id={titleId}
-              className="mt-1.5 text-[16px] font-medium leading-[1.3] tracking-[-0.012em] text-ink"
-            >
-              {titleOf(vehicle)}
-            </h2>
-            <p className="text-[12.5px] text-body">{vehicle.variant}</p>
-          </div>
-          <IconButton ref={closeRef} label="Close details" onClick={onClose}>
+        <div className="flex items-center justify-between gap-3 border-b border-line px-5 py-3.5">
+          <h2
+            id={titleId}
+            className="min-w-0 truncate text-[16px] font-extrabold tracking-[-0.01em] text-ink"
+          >
+            {titleOf(vehicle)}
+          </h2>
+          <IconButton ref={closeRef} size="sm" label="Close details" onClick={onClose}>
             <CloseIcon />
           </IconButton>
         </div>
 
-        <div className="scroll-thin min-h-0 flex-1 overflow-y-auto px-5 py-4">
-          <BodyGlyph
-            bodyType={vehicle.bodyType}
-            color={vehicle.color}
-            className="rounded-field border border-line"
-          />
-
-          <div className="mt-4 flex items-center gap-2 text-[12.5px] text-body">
-            <NcapStars rating={vehicle.safetyRating} />
-            <span>Global NCAP</span>
+        <div className="scroll-thin min-h-0 flex-1 overflow-y-auto px-5 pb-6 pt-5">
+          <div className="grid h-40 place-items-center rounded-tile bg-[var(--tone-soft)] text-[var(--tone)]">
+            <CarArt bodyType={vehicle.bodyType} className="w-[58%] max-w-[220px]" />
           </div>
 
-          <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-3">
-            <Fact label="Fuel" value={labelEnum(vehicle.fuelType)} />
-            <Fact label="Gearbox" value={labelEnum(vehicle.transmission)} />
-            <Fact label="Body" value={labelEnum(vehicle.bodyType)} />
-            <Fact label="Year" value={String(vehicle.year)} />
-            <Fact label="Driven" value={formatKm(vehicle.kmDriven)} />
-            <Fact
-              label="Owners"
-              value={`${vehicle.ownerCount} ${plural(vehicle.ownerCount, "owner")}`}
-            />
-            <Fact label="Seats" value={String(vehicle.seats)} />
-            {isEv ? (
-              <>
-                <Fact
-                  label="Battery"
-                  value={
-                    vehicle.batteryKwh === null ? null : `${vehicle.batteryKwh} kWh`
-                  }
-                />
-                <Fact
-                  label="Range"
-                  value={
-                    vehicle.rangeKm === null ? null : formatKm(vehicle.rangeKm)
-                  }
-                />
-              </>
-            ) : (
-              <>
-                <Fact
-                  label="Engine"
-                  value={
-                    vehicle.engineCc === null ? null : `${vehicle.engineCc} cc`
-                  }
-                />
-                <Fact
-                  label="Mileage"
-                  value={
-                    vehicle.mileageKmpl === null
-                      ? null
-                      : `${vehicle.mileageKmpl} kmpl`
-                  }
-                />
-              </>
-            )}
-            <Fact
-              label="Power"
-              value={vehicle.powerBhp === null ? null : `${vehicle.powerBhp} bhp`}
-            />
-            <Fact label="Colour" value={vehicle.color} />
-            <Fact label="City" value={vehicle.city} />
-            <Fact label="Registration" value={vehicle.registrationState} />
+          <div className="mt-4 flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <div className="text-[32px] font-extrabold leading-none tracking-[-0.03em] text-ink tabular-nums">
+                {formatInr(vehicle.price)}
+              </div>
+              <div className="mt-1.5 text-[12px] text-ink-3 tabular-nums">
+                ₹{groupIndian(vehicle.price)}
+              </div>
+            </div>
+            <SafetyBadge rating={vehicle.safetyRating} />
+          </div>
+
+          <p className="mt-3 text-[13.5px] text-ink-2">
+            {[vehicle.variant, labelEnum(vehicle.fuelType), labelEnum(vehicle.transmission)]
+              .filter(Boolean)
+              .join(" · ")}
+          </p>
+
+          {violations.length > 0 ? (
+            <section
+              aria-label="Against what you asked for"
+              className="mt-4 rounded-tile border border-sun/30 bg-sun-soft px-4 py-3"
+            >
+              <h3 className="flex items-center gap-1.5 text-[13.5px] font-bold text-sun">
+                <WarningIcon className="size-4 shrink-0" />
+                Against what you asked for
+              </h3>
+              <ul className="mt-1.5 space-y-1">
+                {violations.map((violation) => (
+                  <li
+                    key={violation.field}
+                    className="flex items-start gap-2 text-[13px] text-ink-2"
+                  >
+                    <span
+                      aria-hidden="true"
+                      className="mt-[7px] size-1.5 shrink-0 rounded-full bg-sun"
+                    />
+                    <span className="tabular-nums">{violation.caption}</span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
+
+          <dl className="mt-4">
+            {rows.map((row) => (
+              <div
+                key={row.label}
+                className="flex items-baseline justify-between gap-4 border-b border-line py-2.5 text-[13.5px]"
+              >
+                <dt className="shrink-0 text-ink-3">{row.label}</dt>
+                <dd className="min-w-0 truncate text-right font-bold text-ink tabular-nums">
+                  {row.value}
+                </dd>
+              </div>
+            ))}
           </dl>
 
           {vehicle.description ? (
-            <section className="mt-5" aria-label="Description">
-              <h3 className="text-[11px] font-medium uppercase tracking-[0.06em] text-muted">
-                Description
+            <section className="mt-6" aria-labelledby={`${titleId}-about`}>
+              <h3 id={`${titleId}-about`} className="text-[12px] font-bold text-ink-3">
+                About this car
               </h3>
-              <p className="mt-1.5 text-[13.5px] leading-[1.66] tracking-[-0.006em] text-body">
+              <p className="mt-1.5 text-[14px] leading-relaxed text-ink-2">
                 {vehicle.description}
               </p>
             </section>
           ) : null}
 
-          <section className="mt-5" aria-label="Features">
-            <h3 className="text-[11px] font-medium uppercase tracking-[0.06em] text-muted">
-              Features · {vehicle.features.length}
+          <section className="mt-6" aria-labelledby={`${titleId}-features`}>
+            <h3 id={`${titleId}-features`} className="text-[12px] font-bold text-ink-3">
+              Features · <span className="tabular-nums">{vehicle.features.length}</span>
             </h3>
             {vehicle.features.length > 0 ? (
               <ul className="mt-2 flex flex-wrap gap-1.5">
                 {vehicle.features.map((feature) => (
                   <li
                     key={feature}
-                    className={`rounded-full px-2 py-[3px] text-[11.5px] leading-[1.3] ${
+                    className={`rounded-full px-2.5 py-1 text-[12px] font-semibold ${
                       matched.has(feature)
-                        ? "border border-lavender-line bg-lavender-bg font-medium text-lavender"
-                        : "border border-line bg-surface-2 text-body"
+                        ? "bg-electric-soft text-electric"
+                        : "bg-sunk text-ink-2"
                     }`}
                   >
                     {feature}
@@ -223,17 +249,17 @@ export function VehicleSheet({ seed, matchedFeatures, onClose }: Props) {
                 ))}
               </ul>
             ) : (
-              <p className="mt-1.5 text-[12.5px] text-muted">No features listed.</p>
+              <p className="mt-1.5 text-[13px] text-ink-3">No features listed.</p>
             )}
           </section>
 
-          <p className="mt-6 font-mono text-[10px] text-muted">
+          <p className="mt-6 break-all font-mono text-[10.5px] text-ink-3">
             {vehicle.id}
             {listedText ? ` · listed ${listedText}` : ""}
             {isFetching && isPlaceholderData ? " · refreshing…" : ""}
           </p>
           {isError ? (
-            <p className="mt-1 text-[11.5px] text-red">
+            <p className="mt-1 text-[12px] text-rose">
               Could not refresh this listing. Showing the copy from the search
               results.
             </p>

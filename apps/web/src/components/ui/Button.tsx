@@ -2,30 +2,43 @@
 
 import type { ButtonHTMLAttributes } from "react";
 
-type Variant = "primary" | "ghost" | "outline";
+type Variant = "primary" | "outline" | "ghost";
+type Size = "sm" | "md" | "lg";
 
 const VARIANTS: Record<Variant, string> = {
   primary:
-    "bg-primary text-on-primary shadow-card hover:bg-primary-hover disabled:opacity-50 disabled:hover:bg-primary",
-  ghost: "text-muted hover:bg-surface-2 hover:text-ink disabled:opacity-50",
+    "bg-brand text-on-brand shadow-card hover:brightness-110 disabled:hover:brightness-100",
   outline:
-    "border border-primary-line bg-card text-primary hover:bg-primary-soft disabled:opacity-50 disabled:hover:bg-card",
+    "border border-line bg-card text-ink shadow-card hover:border-brand hover:text-brand disabled:hover:border-line disabled:hover:text-ink",
+  ghost: "text-ink-2 hover:bg-sunk hover:text-ink disabled:hover:bg-transparent",
+};
+
+const SIZES: Record<Size, string> = {
+  sm: "h-9 gap-1.5 px-3 text-[12.5px] [&_svg]:size-3.5",
+  md: "h-10 gap-2 px-4 text-[13.5px] [&_svg]:size-4",
+  lg: "h-12 gap-2 px-6 text-[15px] [&_svg]:size-4",
 };
 
 type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: Variant;
+  size?: Size;
+  shape?: "pill" | "rounded";
 };
 
 export function Button({
   variant = "primary",
-  className = "",
+  size = "md",
+  shape = "pill",
   type = "button",
+  className = "",
   ...props
 }: Props) {
   return (
     <button
       type={type}
-      className={`inline-flex h-10 items-center justify-center gap-2 rounded-button px-4 text-[13.5px] font-medium transition-[background-color,border-color,color,opacity] duration-[180ms] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-primary-line disabled:cursor-default ${VARIANTS[variant]} ${className}`}
+      className={`inline-flex shrink-0 items-center justify-center font-bold whitespace-nowrap transition-[background-color,border-color,color,filter,opacity] duration-150 disabled:cursor-default disabled:opacity-50 ${
+        shape === "pill" ? "rounded-full" : "rounded-tile"
+      } ${SIZES[size]} ${VARIANTS[variant]} ${className}`}
       {...props}
     />
   );

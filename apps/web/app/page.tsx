@@ -11,10 +11,13 @@ export default function Page() {
 
 function WorkspaceFallback() {
   return (
-    <div aria-hidden="true" className="mx-auto w-full max-w-[1040px] px-5 pt-[124px]">
-      <div className="mx-auto h-[32px] w-[280px] rounded-lg bg-surface-2" />
-      <div className="mx-auto mt-3 h-[18px] w-[220px] rounded bg-surface-2" />
-      <div className="mt-8 h-[196px] rounded-card border border-input-card-line bg-input-card" />
+    <div aria-hidden="true" className="flex flex-1 flex-col">
+      <div className="h-16 border-b border-line" />
+      <div className="mx-auto w-full max-w-[1180px] px-4 pt-16 md:px-8">
+        <div className="h-7 w-56 rounded-full bg-sunk" />
+        <div className="mt-6 h-12 w-full max-w-[560px] rounded-tile bg-sunk" />
+        <div className="mt-8 h-[68px] w-full max-w-[760px] rounded-panel bg-sunk" />
+      </div>
     </div>
   );
 }

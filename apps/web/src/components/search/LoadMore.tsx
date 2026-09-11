@@ -2,6 +2,7 @@
 
 import { ApiError } from "../../lib/api";
 import { formatCount, plural } from "../../lib/format";
+import { ArrowUpIcon } from "../icons";
 import { Button } from "../ui/Button";
 
 type Props = {
@@ -17,7 +18,7 @@ type Props = {
   onBackToTop: () => void;
 };
 
-function ContinuationError({ error }: { error: unknown }) {
+export function ContinuationError({ error }: { error: unknown }) {
   const apiError = error instanceof ApiError ? error : null;
   let text: string;
   if (apiError?.code === "RATE_LIMITED") {
@@ -27,22 +28,20 @@ function ContinuationError({ error }: { error: unknown }) {
         : "Too many searches in a short window. Wait a moment, then try again.";
   } else {
     const cause = error instanceof Error ? error.message : "Trying again is safe.";
-    text = `Could not load more results. ${cause}`;
+    text = `Couldn't load more results. ${cause}`;
   }
 
   return (
-    <div className="flex max-w-[440px] flex-col items-center gap-1.5 text-center">
+    <div role="alert" className="flex max-w-[440px] flex-col items-center gap-2 text-center">
       {apiError ? (
-        <span className="rounded-full border border-red-line bg-red-bg px-2.5 py-1 font-mono text-[10.5px] text-red">
+        <span className="rounded-full bg-rose-soft px-2.5 py-1 font-mono text-[11px] text-rose">
           {apiError.code}
           {apiError.status ? ` · ${apiError.status}` : ""}
         </span>
       ) : null}
-      <p className="text-[13px] leading-[1.6] text-body">{text}</p>
+      <p className="text-[13.5px] leading-relaxed text-ink-2">{text}</p>
       {apiError?.requestId ? (
-        <p className="font-mono text-[10.5px] text-muted">
-          request {apiError.requestId}
-        </p>
+        <p className="font-mono text-[11px] break-all text-ink-3">request {apiError.requestId}</p>
       ) : null}
     </div>
   );
@@ -61,32 +60,42 @@ export function LoadMore({
   onBackToTop,
 }: Props) {
   const all = total ?? shown;
+  const remaining = total !== null ? total - shown : 0;
+  const next = remaining > 0 ? Math.min(limit, remaining) : limit;
 
   return (
-    <div className="mt-8 flex flex-col items-center gap-3 border-t border-line pt-6">
-      <span className="font-mono text-[10.5px] text-muted">
+    <div className="mt-4 flex flex-col items-center gap-3 text-center">
+      <p className="text-[12px] font-semibold text-ink-3 tabular-nums">
         {total !== null
           ? `Showing ${formatCount(shown)} of ${formatCount(total)}`
           : `Showing ${formatCount(shown)}`}
-      </span>
+      </p>
+
       {error ? <ContinuationError error={error} /> : null}
+
       {hasMore ? (
-        <Button variant="outline" onClick={onLoadMore} disabled={loading}>
-          {loading ? "Loading…" : error ? "Try again" : `Load ${limit} more`}
+        <Button variant="outline" size="lg" onClick={onLoadMore} disabled={loading}>
+          {loading
+            ? "Loading…"
+            : error
+              ? "Try again"
+              : `Show ${formatCount(next)} more ${plural(next, "car")}`}
         </Button>
       ) : capped ? (
-        <p className="max-w-[440px] text-center text-[13px] leading-[1.6] text-body">
+        <p className="max-w-[440px] text-[13.5px] leading-relaxed text-ink-2 tabular-nums">
           {total !== null
-            ? `Showing the top ${formatCount(shown)} of ${formatCount(total)} ${plural(total, "match", "matches")} — similarity ranking stops at ${formatCount(shown)}.`
-            : `Showing the top ${formatCount(shown)} ${plural(shown, "match", "matches")} — similarity ranking stops here.`}
+            ? `Showing the top ${formatCount(shown)} of ${formatCount(total)} ${plural(total, "match", "matches")}. Similarity ranking stops at ${formatCount(shown)}.`
+            : `Showing the top ${formatCount(shown)} ${plural(shown, "match", "matches")}. Similarity ranking stops here.`}
         </p>
       ) : (
-        <p className="text-[13px] text-body">
-          That’s all {formatCount(all)} {plural(all, "match", "matches")}
+        <p className="text-[13.5px] text-ink-2 tabular-nums">
+          That’s all {formatCount(all)} {plural(all, "match", "matches")}.
         </p>
       )}
+
       {pageCount >= 2 ? (
-        <Button variant="ghost" onClick={onBackToTop}>
+        <Button variant="ghost" size="sm" onClick={onBackToTop}>
+          <ArrowUpIcon />
           Back to top
         </Button>
       ) : null}

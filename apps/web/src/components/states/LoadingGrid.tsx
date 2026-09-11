@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from "react";
 
-const DELAYS = ["0s", "0.16s", "0.32s"];
+const DELAYS = ["0s", "0.16s", "0.32s"] as const;
 
 export function LoadingLine({ className = "" }: { className?: string }) {
-  const [stage, setStage] = useState(0);
+  const [stage, setStage] = useState<0 | 1>(0);
 
   useEffect(() => {
     const timer = window.setTimeout(() => setStage(1), 1200);
@@ -14,37 +14,41 @@ export function LoadingLine({ className = "" }: { className?: string }) {
 
   return (
     <div
-      className={`flex items-center gap-[9px] text-[13px] text-muted ${className}`}
+      role="status"
+      aria-live="polite"
+      className={`flex items-center gap-2.5 text-[13.5px] font-semibold text-ink-2 ${className}`}
     >
-      <span className="flex items-center gap-[3px]" aria-hidden="true">
+      <span className="flex items-center gap-1" aria-hidden="true">
         {DELAYS.map((delay) => (
           <span
             key={delay}
             style={{ animationDelay: delay }}
-            className="animate-bob size-[5px] rounded-full bg-muted"
+            className="animate-bob size-1.5 rounded-full bg-brand"
           />
         ))}
       </span>
-      <span>
-        {stage === 0 ? "Understanding your query…" : "Searching the catalogue…"}
-      </span>
+      <span>{stage === 0 ? "Reading your words…" : "Searching the catalogue…"}</span>
     </div>
   );
 }
 
-function SkeletonCard() {
+function GhostCard() {
   return (
     <li aria-hidden="true">
-      <div className="animate-pulse-slow flex h-full flex-col overflow-hidden rounded-card border border-line bg-card shadow-card">
-        <div className="aspect-[4/3] border-b border-line bg-surface-2" />
-        <div className="flex flex-col gap-2.5 p-[14px]">
-          <div className="h-[22px] w-[42%] rounded bg-surface-2" />
-          <div className="h-[14px] w-[70%] rounded bg-surface-2" />
-          <div className="h-[12px] w-[55%] rounded bg-surface-2" />
-          <div className="h-[12px] w-[62%] rounded bg-surface-2" />
+      <div className="shimmer flex h-full flex-col overflow-hidden rounded-panel border border-line bg-card shadow-card">
+        <div className="h-32 bg-sunk" />
+        <div className="flex flex-col gap-3 p-4">
+          <div className="h-6 w-2/5 rounded bg-sunk" />
+          <div className="h-4 w-3/4 rounded bg-sunk" />
+          <div className="h-3 w-1/2 rounded bg-sunk" />
+          <div className="grid grid-cols-3 gap-2">
+            <div className="h-8 rounded-field bg-sunk" />
+            <div className="h-8 rounded-field bg-sunk" />
+            <div className="h-8 rounded-field bg-sunk" />
+          </div>
           <div className="mt-1 flex gap-1.5">
-            <div className="h-[20px] w-[64px] rounded-full bg-surface-2" />
-            <div className="h-[20px] w-[52px] rounded-full bg-surface-2" />
+            <div className="h-5 w-16 rounded-full bg-sunk" />
+            <div className="h-5 w-12 rounded-full bg-sunk" />
           </div>
         </div>
       </div>
@@ -54,11 +58,11 @@ function SkeletonCard() {
 
 export function LoadingGrid({ count = 6 }: { count?: number }) {
   return (
-    <div className="animate-fade">
-      <LoadingLine className="mb-4" />
-      <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    <div className="animate-fade flex flex-col gap-4">
+      <LoadingLine />
+      <ul className="grid grid-cols-[repeat(auto-fill,minmax(min(272px,100%),1fr))] gap-4">
         {Array.from({ length: count }, (_, index) => (
-          <SkeletonCard key={index} />
+          <GhostCard key={index} />
         ))}
       </ul>
     </div>

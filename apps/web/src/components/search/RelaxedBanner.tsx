@@ -2,7 +2,7 @@
 
 import { relaxedFields } from "../../lib/chips";
 import type { RelaxationStep, SearchFilters } from "../../lib/types";
-import { StaticChip } from "../ui/Chip";
+import { WarningIcon } from "../icons";
 
 type Props = {
   steps: RelaxationStep[];
@@ -11,9 +11,6 @@ type Props = {
   busy: boolean;
   onRestore: (filters: SearchFilters) => void;
 };
-
-const LINK =
-  "inline-flex min-h-[24px] items-center rounded px-1.5 py-1 text-[11.5px] font-medium text-orange underline decoration-orange/40 underline-offset-[3px] transition-colors hover:decoration-orange focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-primary-line disabled:opacity-50";
 
 function copyField<K extends keyof SearchFilters>(
   into: SearchFilters,
@@ -24,15 +21,9 @@ function copyField<K extends keyof SearchFilters>(
   else into[key] = from[key];
 }
 
-export function RelaxedBanner({
-  steps,
-  requested,
-  applied,
-  busy,
-  onRestore,
-}: Props) {
+export function RelaxedBanner({ steps, requested, applied, busy, onRestore }: Props) {
   if (steps.length === 0) return null;
-  const loose = steps.length >= 2;
+  const many = steps.length >= 2;
 
   const restoreOne = (step: RelaxationStep) => {
     const next: SearchFilters = { ...applied };
@@ -43,41 +34,46 @@ export function RelaxedBanner({
   return (
     <section
       aria-label="Loosened constraints"
-      className="animate-drop rounded-card border border-orange-line bg-orange-bg px-4 py-3"
+      className="animate-drop rounded-tile border border-sun/30 bg-sun-soft px-4 py-3.5"
     >
-      <p className="text-[13px] font-medium leading-[1.5] text-orange">
-        {loose
-          ? "These are loose matches. Nothing met every constraint, so the search widened more than one:"
-          : "No exact matches, so the search loosened one constraint:"}
-      </p>
-      <ul aria-label="Relaxed constraints" className="mt-2 flex flex-wrap gap-2">
+      <h3 className="flex items-start gap-2 text-[14px] leading-snug font-bold text-sun">
+        <WarningIcon className="mt-px size-4 shrink-0" />
+        {many
+          ? "Nothing matched every constraint, so the search widened a few"
+          : "Nothing matched exactly, so the search widened one constraint"}
+      </h3>
+      <ul aria-label="Widened constraints" className="mt-2.5 flex flex-col gap-1.5">
         {steps.map((step, index) => (
           <li
             key={`${index}:${step.code}:${step.field}`}
-            className="flex items-center gap-1.5"
+            className="flex items-baseline gap-2 text-[13.5px] leading-relaxed text-ink-2"
           >
-            <StaticChip tint="orange" strike>{step.message}</StaticChip>
-            <button
-              type="button"
-              disabled={busy}
-              onClick={() => restoreOne(step)}
-              className={LINK}
-            >
-              Restore
-            </button>
+            <i
+              aria-hidden="true"
+              className="block size-1.5 shrink-0 translate-y-[-2px] rounded-full bg-sun"
+            />
+            <span className="min-w-0">
+              {step.message}{" "}
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => restoreOne(step)}
+                className="rounded font-bold text-sun underline decoration-sun/40 underline-offset-[3px] transition-colors hover:decoration-sun disabled:cursor-default disabled:opacity-50"
+              >
+                Restore
+              </button>
+            </span>
           </li>
         ))}
       </ul>
-      {loose ? (
-        <button
-          type="button"
-          disabled={busy}
-          onClick={() => onRestore(requested)}
-          className={`mt-2 ${LINK} font-normal`}
-        >
-          Restore all constraints
-        </button>
-      ) : null}
+      <button
+        type="button"
+        disabled={busy}
+        onClick={() => onRestore(requested)}
+        className="mt-3 inline-flex h-8 items-center rounded-full border border-sun/40 bg-card px-3.5 text-[12.5px] font-bold text-sun transition-colors hover:bg-sun hover:text-card disabled:cursor-default disabled:opacity-50 disabled:hover:bg-card disabled:hover:text-sun"
+      >
+        Show exact matches only
+      </button>
     </section>
   );
 }

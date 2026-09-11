@@ -3,85 +3,103 @@
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { Suspense, useEffect } from "react";
-import {
-  CarIcon,
-  CloseIcon,
-  HistoryIcon,
-  MenuIcon,
-  PlusIcon,
-  SparkIcon,
-} from "../icons";
+import { SOFT } from "../../lib/tones";
+import { CloseIcon, HistoryIcon, PlusIcon } from "../icons";
+import { BROWSE } from "../search/presets";
 import { IconButton } from "../ui/IconButton";
-import { Kbd } from "../ui/Kbd";
+import { ApiStatus } from "./ApiStatus";
+import { Brand } from "./Brand";
 import { useShell } from "./shell-context";
-import { ThemeToggle } from "./ThemeToggle";
 
-const NAV_ITEM =
-  "flex min-h-11 w-full items-center gap-3 rounded-button px-3 text-left text-[13.5px] text-body transition-[background-color,color] duration-[160ms] hover:bg-surface-2 hover:text-ink focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-primary-line";
+const TITLE = "mb-1 px-2 text-[11.5px] font-bold text-ink-3";
 
-function Brand() {
-  return (
-    <Link
-      href="/"
-      className="flex items-center gap-2.5 rounded-button focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-primary-line"
-    >
-      <span className="grid size-8 place-items-center rounded-[10px] bg-primary text-on-primary shadow-card">
-        <CarIcon className="size-[18px]" />
-      </span>
-      <span className="text-[19px] font-bold tracking-[-0.02em] text-ink">
-        Drive Match
-      </span>
-    </Link>
-  );
-}
+const ITEM =
+  "flex min-h-10 w-full items-center gap-2.5 rounded-field px-2 text-left text-[13.5px] font-semibold transition-[background-color,color] duration-150";
 
-function RecentList() {
+const itemLook = (active: boolean) =>
+  active ? "bg-brand-soft text-brand" : "text-ink-2 hover:bg-sunk hover:text-ink";
+
+const SQUARE = "grid size-7 shrink-0 place-items-center rounded-[8px] [&_svg]:size-3.5";
+
+const hrefFor = (query: string) => `/?q=${encodeURIComponent(query)}`;
+
+function SideLists() {
   const { recents, clearRecents, closeSidebar } = useShell();
   const searchParams = useSearchParams();
   const current = (searchParams.get("q") ?? "").trim().toLowerCase();
 
   return (
-    <section aria-labelledby="sidebar-recent" className="mt-6">
-      <div className="mb-1 flex items-center justify-between px-3">
-        <h2 id="sidebar-recent" className="text-[12px] font-semibold text-ink">
-          Recent
-        </h2>
-        {recents.length > 0 ? (
-          <button
-            type="button"
-            onClick={clearRecents}
-            className="rounded px-1.5 py-0.5 text-[11.5px] text-muted transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-primary-line"
-          >
-            Clear
-          </button>
-        ) : null}
-      </div>
-      {recents.length === 0 ? (
-        <p className="px-3 py-2 text-[12.5px] leading-[1.55] text-muted">
-          Your searches will show up here.
-        </p>
-      ) : (
+    <>
+      <nav aria-label="Browse" className="mt-6">
+        <p className={TITLE}>Browse</p>
         <ul className="flex flex-col gap-0.5">
-          {recents.map((query) => {
-            const active = query.toLowerCase() === current;
+          {BROWSE.map(({ query, title, tone, Icon }) => {
+            const active = current === query.toLowerCase();
             return (
               <li key={query}>
                 <Link
-                  href={`/?q=${encodeURIComponent(query)}`}
+                  href={hrefFor(query)}
                   onClick={closeSidebar}
                   aria-current={active ? "page" : undefined}
-                  title={query}
-                  className={`${NAV_ITEM} ${active ? "bg-primary-soft text-primary hover:bg-primary-soft hover:text-primary" : ""}`}
+                  className={`${ITEM} ${itemLook(active)}`}
                 >
-                  <HistoryIcon className="size-[18px] shrink-0 text-icon" />
-                  <span className="min-w-0 truncate">{query}</span>
+                  <span className={`${SQUARE} ${SOFT[tone]}`}>
+                    <Icon />
+                  </span>
+                  <span className="truncate">{title}</span>
                 </Link>
               </li>
             );
           })}
         </ul>
-      )}
-    </section>
+      </nav>
+
+      <section aria-labelledby="sidebar-recent" className="mt-6">
+        <div className="flex items-center justify-between pr-1">
+          <h2 id="sidebar-recent" className={TITLE}>
+            Recent
+          </h2>
+          {recents.length > 0 ? (
+            <button
+              type="button"
+              onClick={clearRecents}
+              className="-my-2 h-9 rounded-full px-2.5 text-[11.5px] font-semibold text-ink-3 transition-colors hover:bg-sunk hover:text-ink"
+            >
+              Clear
+            </button>
+          ) : null}
+        </div>
+        {recents.length === 0 ? (
+          <p className="px-2 py-1 text-[12.5px] leading-relaxed text-ink-3">
+            Searches you run will show up here.
+          </p>
+        ) : (
+          <ul className="flex flex-col gap-0.5">
+            {recents.map((query) => {
+              const active = query.toLowerCase() === current;
+              return (
+                <li key={query}>
+                  <Link
+                    href={hrefFor(query)}
+                    onClick={closeSidebar}
+                    aria-current={active ? "page" : undefined}
+                    title={query}
+                    className={`${ITEM} ${itemLook(active)}`}
+                  >
+                    <span
+                      className={`${SQUARE} ${active ? "bg-card text-brand" : "bg-sunk text-ink-3"}`}
+                    >
+                      <HistoryIcon />
+                    </span>
+                    <span className="min-w-0 truncate">{query}</span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </section>
+    </>
   );
 }
 
@@ -91,15 +109,16 @@ function Sidebar() {
   return (
     <aside
       aria-label="Sidebar"
-      className={`fixed inset-y-0 left-0 z-[420] flex w-[288px] flex-col border-r border-sidebar-line bg-sidebar px-4 pb-4 pt-5 transition-transform duration-[220ms] lg:sticky lg:top-0 lg:z-auto lg:h-dvh lg:translate-x-0 ${
-        sidebarOpen ? "translate-x-0 shadow-sheet lg:shadow-none" : "-translate-x-full"
+      className={`fixed inset-y-0 left-0 z-[420] flex w-[264px] max-w-[85vw] flex-col border-r border-line bg-side px-3 pt-4 pb-3 transition-[translate,visibility] duration-300 ease-soft lg:visible lg:sticky lg:top-0 lg:z-auto lg:h-dvh lg:max-w-none lg:translate-x-0 lg:shadow-none ${
+        sidebarOpen ? "visible translate-x-0 shadow-sheet" : "invisible -translate-x-full"
       }`}
     >
-      <div className="flex items-center justify-between">
-        <Brand />
+      <div className="flex items-center justify-between gap-2 px-1 pb-4">
+        <Brand onClick={closeSidebar} />
         <IconButton
-          label="Close sidebar"
+          label="Close menu"
           variant="plain"
+          size="sm"
           onClick={closeSidebar}
           className="lg:hidden"
         >
@@ -110,77 +129,26 @@ function Sidebar() {
       <Link
         href="/"
         onClick={closeSidebar}
-        className="mt-7 inline-flex h-11 items-center gap-2.5 self-start rounded-button bg-primary px-5 text-[14px] font-medium text-on-primary shadow-card transition-colors hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-primary-line"
+        className="flex h-11 items-center justify-center gap-2 rounded-field bg-brand text-[13.5px] font-bold text-on-brand shadow-card transition-[filter] duration-150 hover:brightness-110"
       >
         <PlusIcon className="size-4" />
         New search
       </Link>
 
-      <div className="scroll-thin min-h-0 flex-1 overflow-y-auto">
+      <div className="scroll-thin -mx-1 min-h-0 flex-1 overflow-y-auto px-1 pb-2">
         <Suspense fallback={null}>
-          <RecentList />
+          <SideLists />
         </Suspense>
       </div>
 
-      <div className="mt-4 rounded-card border border-primary-line bg-primary-soft px-4 py-3">
-        <p className="text-[12px] font-semibold text-primary">Shortcuts</p>
-        <dl className="mt-2 flex flex-col gap-1.5 text-[12px] text-body">
-          <div className="flex items-center justify-between gap-3">
-            <dt>Focus search</dt>
-            <dd>
-              <Kbd>/</Kbd>
-            </dd>
-          </div>
-          <div className="flex items-center justify-between gap-3">
-            <dt>Search</dt>
-            <dd>
-              <Kbd>↵</Kbd>
-            </dd>
-          </div>
-          <div className="flex items-center justify-between gap-3">
-            <dt>Clear</dt>
-            <dd>
-              <Kbd>esc</Kbd>
-            </dd>
-          </div>
-        </dl>
+      <div className="border-t border-line pt-3">
+        <ApiStatus />
       </div>
     </aside>
   );
 }
 
-function TopBar() {
-  const { openSidebar } = useShell();
-
-  return (
-    <header className="sticky top-0 z-[300] flex h-16 items-center justify-between gap-3 px-4 backdrop-blur-sm md:px-6">
-      <div className="flex min-w-0 items-center gap-3">
-        <IconButton
-          label="Open sidebar"
-          variant="plain"
-          onClick={openSidebar}
-          className="lg:hidden"
-        >
-          <MenuIcon className="size-[18px]" />
-        </IconButton>
-        <div className="flex min-w-0 items-center gap-2.5">
-          <SparkIcon className="size-5 shrink-0 text-primary" />
-          <div className="min-w-0 leading-tight">
-            <p className="truncate text-[13.5px] font-medium text-ink">
-              AI vehicle search
-            </p>
-            <p className="truncate text-[11.5px] text-muted">
-              Plain words in, understood filters out
-            </p>
-          </div>
-        </div>
-      </div>
-      <ThemeToggle />
-    </header>
-  );
-}
-
-function SidebarOverlay() {
+function Overlay() {
   const { sidebarOpen, closeSidebar } = useShell();
   const pathname = usePathname();
 
@@ -202,7 +170,7 @@ function SidebarOverlay() {
     <div
       aria-hidden="true"
       onClick={closeSidebar}
-      className="animate-fade fixed inset-0 z-[410] bg-black/30 lg:hidden"
+      className="animate-fade fixed inset-0 z-[410] bg-scrim lg:hidden"
     />
   );
 }
@@ -211,14 +179,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-dvh">
       <Sidebar />
-      <SidebarOverlay />
+      <Overlay />
       <div className="flex min-w-0 flex-1 flex-col">
-        <TopBar />
-        <div className="flex flex-1 flex-col">{children}</div>
-        <footer className="px-5 py-6 text-center text-[12.5px] text-muted">
-          Copyright ©{new Date().getFullYear()}{" "}
-          <span className="font-medium text-primary">Drive Match</span>. All
-          rights reserved.
+        {children}
+        <footer className="border-t border-line px-4 py-6 text-center text-[12.5px] text-ink-3 md:px-8">
+          © {new Date().getFullYear()}{" "}
+          <span className="font-semibold text-ink-2">Drive Match</span>. AI search over
+          synthetic used-car listings from across India.
         </footer>
       </div>
     </div>

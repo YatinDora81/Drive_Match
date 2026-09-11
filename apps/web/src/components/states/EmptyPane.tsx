@@ -2,59 +2,63 @@
 
 import { hardConstraintsIn } from "../../lib/chips";
 import type { SearchFilters } from "../../lib/types";
+import { CarIcon, UndoIcon } from "../icons";
 import { Button } from "../ui/Button";
+import { EmptyState } from "../ui/EmptyState";
 
 type Props = {
   requested: SearchFilters;
-  overrideMode: boolean;
+  mode: "auto" | "edit" | "exact";
   onUndo: () => void;
   onReset: () => void;
+  onAllowClose: () => void;
 };
 
-const NEVER_RELAXED = "Fuel, gearbox, make and model";
+const LEAD: Record<Props["mode"], string> = {
+  edit: "Relaxation is off while you edit tags, so nothing was widened. Remove a tag or undo to let the search loosen constraints for you.",
+  exact: "Exact matches only is on, so nothing was widened.",
+  auto: "The search already tried loosening the soft constraints (budget, mileage, year, city, seats, safety).",
+};
 
-export function EmptyPane({ requested, overrideMode, onUndo, onReset }: Props) {
+export function EmptyPane({ requested, mode, onUndo, onReset, onAllowClose }: Props) {
   const hard = hardConstraintsIn(requested);
 
   return (
-    <div className="animate-rise grid place-items-center px-5 py-14">
-      <div className="max-w-[440px] text-center">
-        <div
-          aria-hidden="true"
-          className="mx-auto mb-4 grid size-12 place-items-center rounded-full border border-lavender-line bg-lavender-bg text-[22px] font-semibold text-lavender"
-        >
-          ∅
-        </div>
-        <h3 className="text-[20px] font-semibold tracking-[-0.02em] text-ink">
-          No cars match all of that
-        </h3>
-        <p className="mt-2.5 text-[13.5px] leading-[1.66] text-body">
-          {overrideMode
-            ? "Relaxation is off while you are editing filters, so nothing was widened. Remove a chip above, or undo to let the search loosen constraints for you."
-            : "The search already tried loosening the soft constraints (budget, mileage, year, city, seats, safety)."}{" "}
-          {NEVER_RELAXED} are never relaxed
-          {hard.length > 0 ? (
-            <>
-              {" "}
-              — this query pins{" "}
-              <span className="font-medium text-ink">{hard.join(", ")}</span>.
-              Remove one of those chips to widen the net.
-            </>
-          ) : (
-            "."
-          )}
-        </p>
-        <div className="mt-[19px] flex justify-center gap-2">
-          {overrideMode ? (
+    <EmptyState
+      tone="brand"
+      icon={<CarIcon />}
+      title="No cars match all of that"
+      actions={
+        <>
+          {mode === "edit" ? (
             <Button variant="outline" onClick={onUndo}>
+              <UndoIcon />
               Undo edits
+            </Button>
+          ) : null}
+          {mode === "exact" ? (
+            <Button variant="primary" onClick={onAllowClose}>
+              Allow close matches
             </Button>
           ) : null}
           <Button variant="ghost" onClick={onReset}>
             Start over
           </Button>
-        </div>
-      </div>
-    </div>
+        </>
+      }
+    >
+      <p>
+        {LEAD[mode]} Fuel, gearbox, make and model are never relaxed
+        {hard.length > 0 ? (
+          <>
+            {" "}— this search pins{" "}
+            <b className="font-semibold text-ink">{hard.join(", ")}</b>. Remove one of
+            those tags to widen the net.
+          </>
+        ) : (
+          "."
+        )}
+      </p>
+    </EmptyState>
   );
 }

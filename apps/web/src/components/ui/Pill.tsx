@@ -1,25 +1,19 @@
-import { TINT, type Tint } from "./Chip";
+import { SOFT, type Tone } from "../../lib/tones";
 
 type Props = {
-  tint?: Tint | "neutral";
+  tone?: Tone | "neutral";
   mono?: boolean;
   children: React.ReactNode;
   className?: string;
 };
 
-export function Pill({
-  tint = "neutral",
-  mono = false,
-  children,
-  className = "",
-}: Props) {
-  const look =
-    tint === "neutral" ? "border-line bg-surface-2 text-body" : TINT[tint];
+export function Pill({ tone = "neutral", mono = false, children, className = "" }: Props) {
+  const look = tone === "neutral" ? "bg-sunk text-ink-2" : SOFT[tone];
+  // Exactly one size and weight per variant, so the two never fight in the cascade.
+  const type = mono ? "font-mono text-[11px] font-medium" : "text-[11.5px] font-bold";
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-[3px] text-[11px] font-medium leading-[1.4] ${
-        mono ? "font-mono text-[10.5px]" : ""
-      } ${look} ${className}`}
+      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 leading-none ${type} ${look} ${className}`}
     >
       {children}
     </span>

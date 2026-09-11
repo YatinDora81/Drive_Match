@@ -2,47 +2,59 @@
 
 import { formatCount, formatMs, plural, sortLabel } from "../../lib/format";
 import type { SearchResponse } from "../../lib/types";
-import { SparkIcon } from "../icons";
-import { Button } from "../ui/Button";
-import { Pill } from "../ui/Pill";
+import { Toggle } from "../ui/Toggle";
 
 type Props = {
   page: SearchResponse;
   shown: number;
   debug: boolean;
   onToggleDebug: () => void;
-  onSummarize: () => void;
-  summarizing: boolean;
-  summary: string | null;
+  wantSummary: boolean;
+  onToggleSummary: () => void;
+  exactOnly: boolean;
+  onToggleExact: () => void;
 };
 
-export function counterParts(
-  page: SearchResponse,
-  shown: number,
-): { head: string; tail: string } {
-  const { meta, understood } = page;
+const PILL =
+  "inline-flex items-center gap-1 rounded-full border border-line bg-card px-2.5 py-1 text-[11.5px] font-semibold text-ink-2";
+
+function Headline({ page, shown }: { page: SearchResponse; shown: number }) {
+  const { meta } = page;
   const total = meta.total;
-  let head: string;
 
   if (meta.relaxed.length > 0) {
     const close = total ?? shown;
-    head = `0 exact matches · ${formatCount(close)} close ${plural(close, "match", "matches")}`;
-  } else if (meta.exact && total !== null) {
-    head = `${formatCount(total)} ${plural(total, "match", "matches")}`;
-  } else {
-    head = `Top ${formatCount(shown)} ${plural(shown, "match", "matches")}`;
+    return (
+      <>
+        {formatCount(close)} close {plural(close, "match", "matches")}
+        <span className="font-semibold text-ink-3"> · nothing matched exactly</span>
+      </>
+    );
   }
+  if (meta.exact && total !== null) {
+    return (
+      <>
+        {formatCount(total)} {plural(total, "car")} found
+      </>
+    );
+  }
+  return (
+    <>
+      Top {formatCount(shown)} {plural(shown, "match", "matches")}
+      <span className="font-semibold text-ink-3"> · ranked by similarity</span>
+    </>
+  );
+}
 
-  const tail =
-    meta.rankedBy === "default"
-      ? "sorted by newest"
-      : meta.rankedBy === "sort"
-        ? understood.sort
-          ? sortLabel(understood.sort).toLowerCase()
-          : "sorted"
-        : "ranked by similarity";
-
-  return { head, tail };
+function rankLabel(page: SearchResponse): string {
+  switch (page.meta.rankedBy) {
+    case "default":
+      return "Newest first";
+    case "sort":
+      return page.understood.sort ? sortLabel(page.understood.sort) : "Sorted";
+    case "similarity":
+      return "Best match first";
+  }
 }
 
 export function ResultsHeader({
@@ -50,43 +62,57 @@ export function ResultsHeader({
   shown,
   debug,
   onToggleDebug,
-  onSummarize,
-  summarizing,
-  summary,
+  wantSummary,
+  onToggleSummary,
+  exactOnly,
+  onToggleExact,
 }: Props) {
-  const { head, tail } = counterParts(page, shown);
   const { meta } = page;
 
   return (
     <div className="animate-fade">
-      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-line pb-3">
-        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-          <h2 className="text-[18px] font-semibold leading-none tracking-[-0.02em] text-ink">
-            {head}
-          </h2>
-          <span className="text-[12.5px] text-muted">· {tail}</span>
-          {meta.degraded ? (
-            <Pill tint="orange" className="self-center">
-              degraded
-            </Pill>
-          ) : null}
-        </div>
-        <div className="flex items-center gap-1">
-          <Button
-            variant="ghost"
-            onClick={onSummarize}
-            disabled={summarizing || summary !== null}
-            className="!px-2.5"
+      <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-3">
+        <div className="min-w-0">
+          <h2
+            aria-live="polite"
+            className="text-[22px] leading-tight font-extrabold tracking-[-0.03em] text-ink tabular-nums"
           >
-            <SparkIcon />
-            {summarizing ? "Summarizing…" : "Summarize these results"}
-          </Button>
+            <Headline page={page} shown={shown} />
+          </h2>
+          <ul aria-label="How these results were found" className="mt-2 flex flex-wrap gap-1.5">
+            <li className={PILL}>{rankLabel(page)}</li>
+            <li className={PILL}>
+              {meta.mode === "vector" ? "Semantic + filters" : "Filters only"}
+            </li>
+            <li className={`${PILL} tabular-nums`}>
+              <b className="text-ink">{formatMs(meta.timings.totalMs)}</b> total
+            </li>
+            {meta.degraded ? (
+              <li className="inline-flex items-center rounded-full border border-sun/30 bg-sun-soft px-2.5 py-1 text-[11.5px] font-semibold text-sun">
+                Fallback path
+              </li>
+            ) : null}
+          </ul>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <Toggle compact pressed={wantSummary} onClick={onToggleSummary}>
+            AI summary
+          </Toggle>
+          <Toggle
+            compact
+            pressed={exactOnly}
+            onClick={onToggleExact}
+            title="Never widen the search"
+          >
+            Exact only
+          </Toggle>
           <button
             type="button"
             aria-pressed={debug}
             onClick={onToggleDebug}
-            className={`rounded px-2 py-1 font-mono text-[10.5px] transition-colors focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-primary-line ${
-              debug ? "bg-primary-soft text-primary" : "text-muted hover:text-ink"
+            className={`h-8 rounded-full px-3 font-mono text-[11px] transition-colors ${
+              debug ? "bg-brand-soft text-brand" : "text-ink-3 hover:bg-sunk hover:text-ink"
             }`}
           >
             debug
@@ -94,28 +120,14 @@ export function ResultsHeader({
         </div>
       </div>
 
-      {summary ? (
-        <div className="animate-drop mt-3">
-          <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-primary">
-            <SparkIcon className="size-3.5" />
-            AI summary
-          </span>
-          <p className="mt-1 max-w-[760px] rounded-card border border-lavender-line bg-lavender-bg px-4 py-3 text-[14px] leading-[1.65] text-body">
-            {summary}
-          </p>
-        </div>
-      ) : null}
-
       {debug ? (
-        <p className="mt-2 font-mono text-[10px] leading-[1.6] text-muted">
-          mode {meta.mode} · ranked {meta.rankedBy} · parser{" "}
-          {page.understood.parser} · cache understanding:
-          {String(meta.cache.understanding)} embedding:
-          {String(meta.cache.embedding)} · {meta.model.generation} /{" "}
-          {meta.model.embedding} · parse {formatMs(meta.timings.parseMs)} embed{" "}
-          {formatMs(meta.timings.embedMs)} search {formatMs(meta.timings.searchMs)}{" "}
-          hydrate {formatMs(meta.timings.hydrateMs)} total{" "}
-          {formatMs(meta.timings.totalMs)} · catalogue{" "}
+        <p className="mt-3 font-mono text-[10.5px] leading-[1.6] break-words text-ink-3">
+          mode {meta.mode} · ranked {meta.rankedBy} · parser {page.understood.parser} · cache
+          understanding:{String(meta.cache.understanding)} embedding:
+          {String(meta.cache.embedding)} · {meta.model.generation} / {meta.model.embedding} ·
+          parse {formatMs(meta.timings.parseMs)} embed {formatMs(meta.timings.embedMs)} search{" "}
+          {formatMs(meta.timings.searchMs)} hydrate {formatMs(meta.timings.hydrateMs)} explain{" "}
+          {formatMs(meta.timings.explainMs)} total {formatMs(meta.timings.totalMs)} · catalogue{" "}
           {formatCount(meta.catalogueSize)} · request {meta.requestId ?? "—"}
         </p>
       ) : null}

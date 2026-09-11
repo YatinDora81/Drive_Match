@@ -1,10 +1,10 @@
-import type { Metadata } from "next";
-import { Geist_Mono, Inter } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { Geist_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import { AppShell } from "../src/components/layout/AppShell";
 import { Providers } from "./providers";
 import "./globals.css";
 
-const sans = Inter({
+const sans = Plus_Jakarta_Sans({
   subsets: ["latin"],
   variable: "--font-sans",
   display: "swap",
@@ -17,9 +17,16 @@ const mono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Drive Match",
+  title: "Drive Match · Find your car in plain language",
   description:
-    "AI vehicle search. Describe the car you want in plain words and search the catalogue the way you'd say it.",
+    "Describe the car you want in your own words and get matching used cars from across India.",
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f5f6fa" },
+    { media: "(prefers-color-scheme: dark)", color: "#12141b" },
+  ],
 };
 
 export default function RootLayout({
@@ -33,7 +40,7 @@ export default function RootLayout({
     >
       <body
         suppressHydrationWarning
-        className="font-sans text-[14px] text-body antialiased"
+        className="bg-page font-sans text-[15px] leading-normal text-ink antialiased"
       >
         <Providers>
           <AppShell>{children}</AppShell>

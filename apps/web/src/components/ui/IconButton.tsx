@@ -4,20 +4,21 @@ import type { ComponentPropsWithRef } from "react";
 
 type Props = ComponentPropsWithRef<"button"> & {
   label: string;
-  variant?: "outlined" | "plain" | "primary";
+  variant?: "round" | "plain" | "primary";
+  size?: "sm" | "md";
 };
 
 const VARIANTS = {
-  outlined:
-    "border border-line bg-card text-icon shadow-card hover:bg-surface-2 hover:text-ink",
-  plain: "text-icon hover:bg-surface-2 hover:text-ink",
-  primary:
-    "bg-primary text-on-primary shadow-card hover:bg-primary-hover disabled:hover:bg-primary",
+  round:
+    "border border-line bg-card text-ink-2 shadow-card hover:border-line-2 hover:text-ink",
+  plain: "text-ink-2 hover:bg-sunk hover:text-ink",
+  primary: "bg-brand text-on-brand hover:brightness-110 disabled:hover:brightness-100",
 };
 
 export function IconButton({
   label,
-  variant = "outlined",
+  variant = "round",
+  size = "md",
   className = "",
   ...props
 }: Props) {
@@ -26,7 +27,9 @@ export function IconButton({
       type="button"
       aria-label={label}
       title={label}
-      className={`grid size-9 shrink-0 place-items-center rounded-full transition-[background-color,color,opacity] duration-[160ms] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-primary-line disabled:cursor-default disabled:opacity-50 ${VARIANTS[variant]} ${className}`}
+      className={`grid shrink-0 place-items-center rounded-full transition-[background-color,border-color,color,filter,opacity] duration-150 disabled:cursor-default disabled:opacity-50 ${
+        size === "sm" ? "size-9" : "size-10"
+      } ${VARIANTS[variant]} ${className}`}
       {...props}
     />
   );

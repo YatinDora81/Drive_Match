@@ -34,7 +34,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
           position="bottom-right"
           toastOptions={{
             className:
-              "!bg-card !text-ink !border !border-line !rounded-[12px] !shadow-lift !font-sans !text-[13px]",
+              "!bg-card !text-ink !border !border-line !rounded-[14px] !shadow-up !font-sans !text-[13px] !font-medium",
           }}
         />
       </QueryClientProvider>

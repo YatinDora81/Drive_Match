@@ -1,6 +1,6 @@
 export function Kbd({ children }: { children: React.ReactNode }) {
   return (
-    <kbd className="rounded-[5px] border border-line bg-card px-[5px] py-[1px] font-mono text-[10px] text-muted shadow-card">
+    <kbd className="inline-grid min-w-[20px] place-items-center rounded-[6px] border border-line bg-card px-1.5 py-px font-sans text-[11px] font-bold text-ink-3 shadow-card">
       {children}
     </kbd>
   );

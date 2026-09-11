@@ -1,163 +1,161 @@
 "use client";
 
-import { formatInr, formatKm, labelEnum, ordinal } from "../../lib/format";
-import type { SearchFilters, SearchResult } from "../../lib/types";
-import {
-  violationMap,
-  violationsFor,
-  type ViolationField,
-} from "../../lib/violations";
-import { BodyGlyph } from "./BodyGlyph";
-import { NcapStars } from "./NcapStars";
+import { groupIndian, inrParts, labelEnum, plural } from "../../lib/format";
+import { FUEL_TONE, toneStyle } from "../../lib/tones";
+import type { SearchFilters, SearchResult, Vehicle } from "../../lib/types";
+import { violationsFor } from "../../lib/violations";
+import { SparkIcon, WarningIcon } from "../icons";
+import { CarArt } from "./CarArt";
+import { SafetyBadge } from "./SafetyBadge";
 
 type Props = {
   result: SearchResult;
   requested: SearchFilters;
   debug: boolean;
   index: number;
+  crown: string | null;
   onOpen: (result: SearchResult) => void;
 };
 
-function Dot() {
-  return (
-    <span aria-hidden="true" className="mx-[5px] text-faint">
-      ·
-    </span>
-  );
+const UNIT_WORD = { L: "Lakh", Cr: "Crore", "": "" } as const;
+
+const PICTURE_PILL =
+  "absolute rounded-full bg-card px-2.5 py-1 text-[11px] leading-none font-bold";
+
+type Stat = { label: string; value: string };
+
+function thirdStat(vehicle: Vehicle): Stat {
+  if (vehicle.fuelType === "ELECTRIC" && vehicle.rangeKm !== null) {
+    return { value: groupIndian(vehicle.rangeKm), label: "km range" };
+  }
+  if (vehicle.mileageKmpl !== null) {
+    const kmpl = Number.isInteger(vehicle.mileageKmpl)
+      ? String(vehicle.mileageKmpl)
+      : vehicle.mileageKmpl.toFixed(1);
+    return { value: kmpl, label: "kmpl" };
+  }
+  return { value: String(vehicle.seats), label: plural(vehicle.seats, "seat") };
 }
 
-export function VehicleCard({ result, requested, debug, index, onOpen }: Props) {
+export function VehicleCard({ result, requested, debug, index, crown, onOpen }: Props) {
   const { vehicle, matchedFeatures, score } = result;
   const titleId = `vehicle-${vehicle.id}-title`;
-  const bad = violationMap(violationsFor(vehicle, requested));
-  const warn = (field: ViolationField) =>
-    bad[field] ? "font-medium text-orange" : "";
+  const price = inrParts(vehicle.price);
+  const violations = violationsFor(vehicle, requested);
 
-  const seatsFiltered =
-    requested.seatsMin !== undefined || requested.seatsMax !== undefined;
-  const showSeats = seatsFiltered || vehicle.seats >= 6;
-  const isEv = vehicle.fuelType === "ELECTRIC";
+  const stats: Stat[] = [
+    { value: groupIndian(vehicle.kmDriven), label: "km driven" },
+    { value: String(vehicle.ownerCount), label: plural(vehicle.ownerCount, "owner") },
+    thirdStat(vehicle),
+  ];
 
   const matched = new Set(matchedFeatures);
-  const tags = [
-    ...matchedFeatures,
+  const features = [
+    ...matchedFeatures.filter((feature) => vehicle.features.includes(feature)),
     ...vehicle.features.filter((feature) => !matched.has(feature)),
-  ].slice(0, 3);
-
-  const otherCaptions = (Object.keys(bad) as ViolationField[])
-    .filter((field) => field !== "price")
-    .map((field) => bad[field])
-    .filter((caption): caption is string => Boolean(caption));
+  ].slice(0, 2);
 
   return (
     <article
       aria-labelledby={titleId}
-      className="group relative flex h-full flex-col overflow-hidden rounded-card border border-line bg-card shadow-card transition-[border-color,box-shadow,transform] duration-[180ms] hover:-translate-y-px hover:border-primary-line hover:shadow-lift has-[:focus-visible]:border-primary has-[:focus-visible]:ring-[3px] has-[:focus-visible]:ring-primary-line"
+      style={toneStyle(FUEL_TONE[vehicle.fuelType])}
+      className="relative flex h-full flex-col overflow-hidden rounded-panel border border-line bg-card shadow-card transition-[transform,box-shadow] duration-200 ease-soft hover:-translate-y-[3px] hover:shadow-up has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-brand"
     >
-      <BodyGlyph bodyType={vehicle.bodyType} color={vehicle.color} />
+      <div className="relative grid h-32 place-items-center bg-[var(--tone-soft)] text-[var(--tone)]">
+        <CarArt bodyType={vehicle.bodyType} className="w-[62%] max-w-[190px]" />
+        <span className={`${PICTURE_PILL} top-2.5 left-2.5 text-[var(--tone)]`}>
+          {labelEnum(vehicle.fuelType)}
+        </span>
+        <span className={`${PICTURE_PILL} top-2.5 right-2.5 text-ink-2`}>
+          {labelEnum(vehicle.bodyType)}
+        </span>
+        {crown ? (
+          <span className="absolute bottom-2.5 left-2.5 inline-flex items-center gap-1 rounded-full bg-brand px-2.5 py-1 text-[11px] leading-none font-bold text-on-brand">
+            <SparkIcon className="size-3" />
+            {crown}
+          </span>
+        ) : null}
+      </div>
 
-      <div className="flex flex-1 flex-col gap-1 p-[14px]">
-        <div className="flex items-start justify-between gap-2">
-          <div>
-            <div
-              className={`text-[22px] font-bold leading-none tracking-[-0.025em] ${
-                bad.price ? "text-orange" : "text-ink"
-              }`}
-            >
-              {formatInr(vehicle.price)}
-            </div>
-            {bad.price ? (
-              <p className="mt-1 text-[11px] font-medium text-orange">{bad.price}</p>
-            ) : null}
-          </div>
-          <NcapStars rating={vehicle.safetyRating} short={Boolean(bad.safety)} />
-        </div>
+      <div className="flex flex-1 flex-col px-4 pt-3.5 pb-4">
+        <p className="flex items-baseline gap-1.5 text-ink">
+          <span className="text-[26px] leading-none font-extrabold tracking-tight tabular-nums">
+            ₹{price.value}
+          </span>
+          {price.unit ? (
+            <span className="text-[13px] font-bold text-ink-3">{UNIT_WORD[price.unit]}</span>
+          ) : null}
+        </p>
+        <p className="mt-1 text-[11.5px] text-ink-3 tabular-nums">
+          ₹{groupIndian(vehicle.price)}
+        </p>
 
         <h3
           id={titleId}
-          className="mt-1.5 text-[15px] font-medium leading-[1.3] tracking-[-0.012em] text-ink"
+          className="mt-2.5 text-[16px] leading-snug font-bold tracking-[-0.01em] text-ink"
         >
           <button
             type="button"
             data-card-index={index}
             onClick={() => onOpen(result)}
-            className="text-left after:absolute after:inset-0 after:content-[''] focus-visible:outline-none"
+            className="cursor-pointer text-left after:absolute after:inset-0 after:content-[''] focus-visible:outline-none"
           >
-            <span className={warn("year")}>{vehicle.year}</span> {vehicle.make}{" "}
-            {vehicle.model}
+            {vehicle.year} {vehicle.make} {vehicle.model}
             <span className="sr-only">, view details</span>
           </button>
         </h3>
-        <p className="text-[12.5px] leading-[1.45] text-body">{vehicle.variant}</p>
-
-        <p className="mt-1 text-[12.5px] leading-[1.5] text-body">
-          <span className={warn("km")}>{formatKm(vehicle.kmDriven)}</span>
-          <Dot />
-          <span className={warn("owners")}>
-            {ordinal(vehicle.ownerCount)} owner
-          </span>
-          <Dot />
-          <span className={warn("city")}>{vehicle.city}</span>
+        <p className="mt-0.5 truncate text-[12.5px] text-ink-3">
+          {vehicle.variant} · {labelEnum(vehicle.transmission)} · {vehicle.city}
         </p>
 
-        <p className="text-[12.5px] leading-[1.5] text-body">
-          {vehicle.fuelType === "CNG" ? (
-            <span className="rounded-[4px] bg-green-bg px-1.5 py-px text-[11px] font-medium text-green">
-              CNG
-            </span>
-          ) : (
-            <span>{labelEnum(vehicle.fuelType)}</span>
-          )}
-          {isEv && vehicle.rangeKm !== null ? (
-            <>
-              <Dot />
-              <span>{formatKm(vehicle.rangeKm)} range</span>
-            </>
-          ) : null}
-          {!isEv ? (
-            <>
-              <Dot />
-              <span>{labelEnum(vehicle.transmission)}</span>
-            </>
-          ) : null}
-          <Dot />
-          <span className={warn("bodyType")}>{labelEnum(vehicle.bodyType)}</span>
-          {showSeats ? (
-            <>
-              <Dot />
-              <span className={warn("seats")}>{vehicle.seats} seats</span>
-            </>
-          ) : null}
-        </p>
+        <dl className="mt-3.5 grid grid-cols-3 border-y border-line py-2.5">
+          {stats.map((stat, i) => (
+            <div
+              key={stat.label}
+              className={`flex min-w-0 flex-col-reverse ${
+                i > 0 ? "border-l border-line pl-3" : ""
+              }`}
+            >
+              <dt className="mt-0.5 truncate text-[11px] text-ink-3">{stat.label}</dt>
+              <dd className="truncate text-[14px] leading-tight font-bold text-ink tabular-nums">
+                {stat.value}
+              </dd>
+            </div>
+          ))}
+        </dl>
 
-        {otherCaptions.length > 0 ? (
-          <p className="text-[11px] font-medium leading-[1.5] text-orange">
-            {otherCaptions.join(" · ")}
+        {violations.length > 0 ? (
+          <p className="mt-3 flex items-start gap-1.5 rounded-field bg-rose-soft px-2.5 py-2 text-[12px] leading-snug font-semibold text-rose">
+            <WarningIcon className="mt-px size-3.5 shrink-0" />
+            <span>{violations.map((v) => v.caption).join(" · ")}</span>
           </p>
         ) : null}
 
-        {tags.length > 0 ? (
-          <ul aria-label="Features" className="mt-2 flex flex-wrap gap-1.5">
-            {tags.map((feature) => {
-              const hit = matched.has(feature);
-              return (
-                <li
-                  key={feature}
-                  className={`rounded-full px-2 py-[3px] text-[11px] leading-[1.3] ${
-                    hit
-                      ? "border border-lavender-line bg-lavender-bg font-medium text-lavender"
-                      : "border border-line bg-surface-2 text-body"
-                  }`}
-                >
-                  {feature}
-                </li>
-              );
-            })}
-          </ul>
-        ) : null}
+        <div className="mt-auto flex flex-wrap items-center justify-between gap-2 pt-3">
+          <SafetyBadge rating={vehicle.safetyRating} />
+          {features.length > 0 ? (
+            <ul aria-label="Features" className="flex min-w-0 flex-wrap justify-end gap-1.5">
+              {features.map((feature) => {
+                const hit = matched.has(feature);
+                return (
+                  <li
+                    key={feature}
+                    title={feature}
+                    className={`max-w-[9.5rem] truncate rounded-md px-2 py-1 text-[11px] leading-none font-semibold ${
+                      hit ? "bg-electric-soft text-electric" : "bg-sunk text-ink-3"
+                    }`}
+                  >
+                    {feature}
+                    {hit ? <span className="sr-only"> (matches your search)</span> : null}
+                  </li>
+                );
+              })}
+            </ul>
+          ) : null}
+        </div>
 
         {debug ? (
-          <p className="mt-auto pt-2 font-mono text-[10px] text-muted">
+          <p className="mt-2 font-mono text-[10.5px] text-ink-3">
             #{result.rank} · score {score === null ? "—" : score.toFixed(3)}
           </p>
         ) : null}
