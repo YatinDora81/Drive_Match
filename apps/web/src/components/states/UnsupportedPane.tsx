@@ -9,14 +9,14 @@ export function UnsupportedPane({ message, children }: Props) {
       <div className="max-w-[520px] text-center">
         <div
           aria-hidden="true"
-          className="mb-[18px] font-display text-[52px] font-bold leading-none text-rule-2"
+          className="mx-auto mb-4 grid size-12 place-items-center rounded-full border border-lavender-line bg-lavender-bg text-[22px] font-semibold text-lavender"
         >
           ?
         </div>
-        <h3 className="font-display text-[21px] font-semibold tracking-[-0.028em] text-ink">
+        <h3 className="text-[20px] font-semibold tracking-[-0.02em] text-ink">
           That does not read like a car search
         </h3>
-        <p className="mt-2.5 text-[13.5px] leading-[1.66] text-ink-2">
+        <p className="mt-2.5 text-[13.5px] leading-[1.66] text-body">
           {message ??
             "This search only understands questions about the used-car catalogue."}{" "}
           Describe the kind of car, the budget, or where you are looking — something

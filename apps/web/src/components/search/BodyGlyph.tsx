@@ -52,10 +52,10 @@ export function swatchFor(color: string): string {
   const key = Object.keys(HUES).find((name) => word.includes(name));
   const hue = key === undefined ? hashHue(word) : HUES[key];
 
-  if (hue === "white") return "color-mix(in oklab, var(--paper-2) 72%, #ffffff)";
-  if (hue === "black") return "color-mix(in oklab, var(--paper-2) 74%, #000000)";
-  if (hue === "grey") return "color-mix(in oklab, var(--paper-2) 74%, #8a8a8a)";
-  return `color-mix(in oklab, var(--paper-2) 76%, hsl(${hue} 65% 55%))`;
+  if (hue === "white") return "color-mix(in oklab, var(--surface-2) 72%, #ffffff)";
+  if (hue === "black") return "color-mix(in oklab, var(--surface-2) 74%, #000000)";
+  if (hue === "grey") return "color-mix(in oklab, var(--surface-2) 74%, #8a8a8a)";
+  return `color-mix(in oklab, var(--surface-2) 76%, hsl(${hue} 65% 55%))`;
 }
 
 type Props = { bodyType: BodyType; color: string; className?: string };
@@ -65,7 +65,7 @@ export function BodyGlyph({ bodyType, color, className = "" }: Props) {
     <div
       aria-hidden="true"
       style={{ background: swatchFor(color) }}
-      className={`grid aspect-[4/3] w-full place-items-center border-b border-rule text-ink-2 ${className}`}
+      className={`grid aspect-[4/3] w-full place-items-center border-b border-line text-body ${className}`}
     >
       <svg
         viewBox="0 0 96 48"
@@ -77,8 +77,8 @@ export function BodyGlyph({ bodyType, color, className = "" }: Props) {
         className="h-auto w-[58%] opacity-70"
       >
         <path d={OUTLINES[bodyType] ?? OUTLINES.SEDAN} />
-        <circle cx="26" cy="36" r="6" fill="var(--paper)" />
-        <circle cx="70" cy="36" r="6" fill="var(--paper)" />
+        <circle cx="26" cy="36" r="6" fill="var(--card)" />
+        <circle cx="70" cy="36" r="6" fill="var(--card)" />
       </svg>
     </div>
   );

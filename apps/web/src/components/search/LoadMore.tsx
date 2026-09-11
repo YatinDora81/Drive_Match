@@ -33,14 +33,14 @@ function ContinuationError({ error }: { error: unknown }) {
   return (
     <div className="flex max-w-[440px] flex-col items-center gap-1.5 text-center">
       {apiError ? (
-        <span className="rounded-[5px] bg-err-bg px-[9px] py-1 font-mono text-[10.5px] text-err">
+        <span className="rounded-full border border-red-line bg-red-bg px-2.5 py-1 font-mono text-[10.5px] text-red">
           {apiError.code}
           {apiError.status ? ` · ${apiError.status}` : ""}
         </span>
       ) : null}
-      <p className="text-[13px] leading-[1.6] text-ink-2">{text}</p>
+      <p className="text-[13px] leading-[1.6] text-body">{text}</p>
       {apiError?.requestId ? (
-        <p className="font-mono text-[10.5px] text-ink-3">
+        <p className="font-mono text-[10.5px] text-muted">
           request {apiError.requestId}
         </p>
       ) : null}
@@ -63,8 +63,8 @@ export function LoadMore({
   const all = total ?? shown;
 
   return (
-    <div className="mt-8 flex flex-col items-center gap-3 border-t border-rule pt-6">
-      <span className="font-mono text-[10.5px] text-ink-3">
+    <div className="mt-8 flex flex-col items-center gap-3 border-t border-line pt-6">
+      <span className="font-mono text-[10.5px] text-muted">
         {total !== null
           ? `Showing ${formatCount(shown)} of ${formatCount(total)}`
           : `Showing ${formatCount(shown)}`}
@@ -75,13 +75,13 @@ export function LoadMore({
           {loading ? "Loading…" : error ? "Try again" : `Load ${limit} more`}
         </Button>
       ) : capped ? (
-        <p className="max-w-[440px] text-center text-[13px] leading-[1.6] text-ink-2">
+        <p className="max-w-[440px] text-center text-[13px] leading-[1.6] text-body">
           {total !== null
             ? `Showing the top ${formatCount(shown)} of ${formatCount(total)} ${plural(total, "match", "matches")} — similarity ranking stops at ${formatCount(shown)}.`
             : `Showing the top ${formatCount(shown)} ${plural(shown, "match", "matches")} — similarity ranking stops here.`}
         </p>
       ) : (
-        <p className="text-[13px] text-ink-2">
+        <p className="text-[13px] text-body">
           That’s all {formatCount(all)} {plural(all, "match", "matches")}
         </p>
       )}

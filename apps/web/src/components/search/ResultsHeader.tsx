@@ -59,14 +59,14 @@ export function ResultsHeader({
 
   return (
     <div className="animate-fade">
-      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-rule pb-3">
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-line pb-3">
         <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-          <h2 className="font-display text-[19px] font-semibold leading-none tracking-[-0.025em] text-ink">
+          <h2 className="text-[18px] font-semibold leading-none tracking-[-0.02em] text-ink">
             {head}
           </h2>
-          <span className="text-[12.5px] text-ink-3">· {tail}</span>
+          <span className="text-[12.5px] text-muted">· {tail}</span>
           {meta.degraded ? (
-            <Pill tone="warn" className="self-center">
+            <Pill tint="orange" className="self-center">
               degraded
             </Pill>
           ) : null}
@@ -85,8 +85,8 @@ export function ResultsHeader({
             type="button"
             aria-pressed={debug}
             onClick={onToggleDebug}
-            className={`rounded px-2 py-1 font-mono text-[10.5px] transition-colors focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-accent-bg ${
-              debug ? "bg-paper-3 text-ink" : "text-ink-3 hover:text-ink"
+            className={`rounded px-2 py-1 font-mono text-[10.5px] transition-colors focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-primary-line ${
+              debug ? "bg-primary-soft text-primary" : "text-muted hover:text-ink"
             }`}
           >
             debug
@@ -96,17 +96,18 @@ export function ResultsHeader({
 
       {summary ? (
         <div className="animate-drop mt-3">
-          <span className="font-mono text-[9.5px] uppercase tracking-[0.11em] text-ink-3">
+          <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-primary">
+            <SparkIcon className="size-3.5" />
             AI summary
           </span>
-          <p className="mt-1 max-w-[760px] text-[15px] italic leading-[1.6] tracking-[-0.008em] text-ink-2">
+          <p className="mt-1 max-w-[760px] rounded-card border border-lavender-line bg-lavender-bg px-4 py-3 text-[14px] leading-[1.65] text-body">
             {summary}
           </p>
         </div>
       ) : null}
 
       {debug ? (
-        <p className="mt-2 font-mono text-[10px] leading-[1.6] text-ink-3">
+        <p className="mt-2 font-mono text-[10px] leading-[1.6] text-muted">
           mode {meta.mode} · ranked {meta.rankedBy} · parser{" "}
           {page.understood.parser} · cache understanding:
           {String(meta.cache.understanding)} embedding:

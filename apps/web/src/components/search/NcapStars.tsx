@@ -8,7 +8,7 @@ type Props = {
 export function NcapStars({ rating, short = false }: Props) {
   if (rating === null) {
     return (
-      <span className="inline-flex items-center rounded-full bg-paper-3 px-2 py-[2px] text-[10.5px] font-medium text-ink-2">
+      <span className="inline-flex items-center rounded-full border border-line bg-surface-2 px-2 py-[2px] text-[10.5px] font-medium text-body">
         Not rated
       </span>
     );
@@ -20,7 +20,7 @@ export function NcapStars({ rating, short = false }: Props) {
         role="img"
         aria-label="0 of 5 Global NCAP stars"
         title="0 of 5 Global NCAP stars"
-        className="inline-flex items-center rounded-full bg-err-bg px-2 py-[2px] text-[10.5px] font-medium text-err"
+        className="inline-flex items-center rounded-full border border-red-line bg-red-bg px-2 py-[2px] text-[10.5px] font-medium text-red"
       >
         0★
       </span>
@@ -34,7 +34,7 @@ export function NcapStars({ rating, short = false }: Props) {
       role="img"
       aria-label={`${stars} of 5 Global NCAP stars`}
       title={`${stars} of 5 Global NCAP stars`}
-      className={`inline-flex items-center gap-[1px] ${short ? "text-warn" : "text-ink-2"}`}
+      className={`inline-flex items-center gap-[1px] ${short ? "text-orange" : "text-yellow"}`}
     >
       {Array.from({ length: 5 }, (_, index) => (
         <StarIcon

@@ -1,31 +1,25 @@
-type Tone = "neutral" | "ok" | "warn" | "err" | "accent";
-
-const TONES: Record<Tone, string> = {
-  neutral: "bg-paper-3 text-ink-2",
-  ok: "bg-ok-bg text-ok",
-  warn: "bg-warn-bg text-warn",
-  err: "bg-err-bg text-err",
-  accent: "bg-accent-bg text-accent",
-};
+import { TINT, type Tint } from "./Chip";
 
 type Props = {
-  tone?: Tone;
+  tint?: Tint | "neutral";
   mono?: boolean;
   children: React.ReactNode;
   className?: string;
 };
 
 export function Pill({
-  tone = "neutral",
+  tint = "neutral",
   mono = false,
   children,
   className = "",
 }: Props) {
+  const look =
+    tint === "neutral" ? "border-line bg-surface-2 text-body" : TINT[tint];
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full px-[9px] py-[3px] text-[11px] font-medium leading-[1.4] ${
+      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-[3px] text-[11px] font-medium leading-[1.4] ${
         mono ? "font-mono text-[10.5px]" : ""
-      } ${TONES[tone]} ${className}`}
+      } ${look} ${className}`}
     >
       {children}
     </span>

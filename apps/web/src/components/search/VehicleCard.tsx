@@ -20,7 +20,7 @@ type Props = {
 
 function Dot() {
   return (
-    <span aria-hidden="true" className="mx-[5px] text-rule-2">
+    <span aria-hidden="true" className="mx-[5px] text-faint">
       ·
     </span>
   );
@@ -31,7 +31,7 @@ export function VehicleCard({ result, requested, debug, index, onOpen }: Props) 
   const titleId = `vehicle-${vehicle.id}-title`;
   const bad = violationMap(violationsFor(vehicle, requested));
   const warn = (field: ViolationField) =>
-    bad[field] ? "font-medium text-warn" : "";
+    bad[field] ? "font-medium text-orange" : "";
 
   const seatsFiltered =
     requested.seatsMin !== undefined || requested.seatsMax !== undefined;
@@ -52,7 +52,7 @@ export function VehicleCard({ result, requested, debug, index, onOpen }: Props) 
   return (
     <article
       aria-labelledby={titleId}
-      className="group relative flex h-full flex-col overflow-hidden rounded-[12px] border border-rule bg-paper transition-[border-color,background-color] duration-[180ms] hover:border-rule-2 hover:bg-paper-2 has-[:focus-visible]:border-accent has-[:focus-visible]:ring-[3px] has-[:focus-visible]:ring-accent-bg"
+      className="group relative flex h-full flex-col overflow-hidden rounded-card border border-line bg-card shadow-card transition-[border-color,box-shadow,transform] duration-[180ms] hover:-translate-y-px hover:border-primary-line hover:shadow-lift has-[:focus-visible]:border-primary has-[:focus-visible]:ring-[3px] has-[:focus-visible]:ring-primary-line"
     >
       <BodyGlyph bodyType={vehicle.bodyType} color={vehicle.color} />
 
@@ -60,14 +60,14 @@ export function VehicleCard({ result, requested, debug, index, onOpen }: Props) 
         <div className="flex items-start justify-between gap-2">
           <div>
             <div
-              className={`font-display text-[22px] font-semibold leading-none tracking-[-0.03em] ${
-                bad.price ? "text-warn" : "text-ink"
+              className={`text-[22px] font-bold leading-none tracking-[-0.025em] ${
+                bad.price ? "text-orange" : "text-ink"
               }`}
             >
               {formatInr(vehicle.price)}
             </div>
             {bad.price ? (
-              <p className="mt-1 text-[11px] font-medium text-warn">{bad.price}</p>
+              <p className="mt-1 text-[11px] font-medium text-orange">{bad.price}</p>
             ) : null}
           </div>
           <NcapStars rating={vehicle.safetyRating} short={Boolean(bad.safety)} />
@@ -88,9 +88,9 @@ export function VehicleCard({ result, requested, debug, index, onOpen }: Props) 
             <span className="sr-only">, view details</span>
           </button>
         </h3>
-        <p className="text-[12.5px] leading-[1.45] text-ink-2">{vehicle.variant}</p>
+        <p className="text-[12.5px] leading-[1.45] text-body">{vehicle.variant}</p>
 
-        <p className="mt-1 text-[12.5px] leading-[1.5] text-ink-2">
+        <p className="mt-1 text-[12.5px] leading-[1.5] text-body">
           <span className={warn("km")}>{formatKm(vehicle.kmDriven)}</span>
           <Dot />
           <span className={warn("owners")}>
@@ -100,9 +100,9 @@ export function VehicleCard({ result, requested, debug, index, onOpen }: Props) 
           <span className={warn("city")}>{vehicle.city}</span>
         </p>
 
-        <p className="text-[12.5px] leading-[1.5] text-ink-2">
+        <p className="text-[12.5px] leading-[1.5] text-body">
           {vehicle.fuelType === "CNG" ? (
-            <span className="rounded-[4px] bg-ok-bg px-1.5 py-px text-[11px] font-medium text-ok">
+            <span className="rounded-[4px] bg-green-bg px-1.5 py-px text-[11px] font-medium text-green">
               CNG
             </span>
           ) : (
@@ -131,7 +131,7 @@ export function VehicleCard({ result, requested, debug, index, onOpen }: Props) 
         </p>
 
         {otherCaptions.length > 0 ? (
-          <p className="text-[11px] font-medium leading-[1.5] text-warn">
+          <p className="text-[11px] font-medium leading-[1.5] text-orange">
             {otherCaptions.join(" · ")}
           </p>
         ) : null}
@@ -145,8 +145,8 @@ export function VehicleCard({ result, requested, debug, index, onOpen }: Props) 
                   key={feature}
                   className={`rounded-full px-2 py-[3px] text-[11px] leading-[1.3] ${
                     hit
-                      ? "bg-accent-bg font-medium text-accent"
-                      : "border border-rule bg-paper-2 text-ink-2"
+                      ? "border border-lavender-line bg-lavender-bg font-medium text-lavender"
+                      : "border border-line bg-surface-2 text-body"
                   }`}
                 >
                   {feature}
@@ -157,7 +157,7 @@ export function VehicleCard({ result, requested, debug, index, onOpen }: Props) 
         ) : null}
 
         {debug ? (
-          <p className="mt-auto pt-2 font-mono text-[10px] text-ink-3">
+          <p className="mt-auto pt-2 font-mono text-[10px] text-muted">
             #{result.rank} · score {score === null ? "—" : score.toFixed(3)}
           </p>
         ) : null}

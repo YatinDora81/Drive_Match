@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useParse } from "../../hooks/useSearch";
 import { chipsFromFilters, sortChipLabel } from "../../lib/chips";
 import type { ParsedQuery, SearchFilters, SearchSort } from "../../lib/types";
-import { RefreshIcon } from "../icons";
+import { RefreshIcon, SparkIcon } from "../icons";
 import { Button } from "../ui/Button";
 import { RemovableChip, StaticChip } from "../ui/Chip";
 import { Pill } from "../ui/Pill";
@@ -33,10 +33,10 @@ function ParseDisclosure({ query }: { query: string }) {
       className="mt-2"
       onToggle={(event) => setOpen(event.currentTarget.open)}
     >
-      <summary className="cursor-pointer font-mono text-[10.5px] text-ink-3 hover:text-ink">
+      <summary className="cursor-pointer text-[12px] text-muted hover:text-ink">
         Show parse
       </summary>
-      <pre className="mt-2 max-h-[320px] overflow-auto rounded-[8px] border border-rule bg-paper-2 p-3 font-mono text-[10.5px] leading-[1.5] text-ink-2">
+      <pre className="mt-2 max-h-[320px] overflow-auto rounded-field border border-line bg-card p-3 font-mono text-[10.5px] leading-[1.5] text-body">
         {parse.isError
           ? parse.error.message
           : parse.data
@@ -70,18 +70,18 @@ export function UnderstoodRow({
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
         <h2
           id="understood-title"
-          className="font-mono text-[10px] uppercase tracking-[0.11em] text-ink-3"
+          className="text-[12px] font-semibold text-ink"
         >
           Understood as
         </h2>
         {overrideMode ? (
           <span className="flex items-center gap-1.5">
-            <Pill tone="accent">Edited</Pill>
+            <Pill tint="lavender">Edited</Pill>
             <button
               type="button"
               onClick={onUndo}
               disabled={busy}
-              className="inline-flex min-h-[24px] items-center rounded px-1.5 py-1 text-[11.5px] text-ink-3 underline decoration-rule-2 underline-offset-[3px] transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-accent-bg disabled:opacity-50"
+              className="inline-flex min-h-[24px] items-center rounded px-1.5 py-1 text-[11.5px] text-muted underline decoration-line underline-offset-[3px] transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-primary-line disabled:opacity-50"
             >
               Undo
             </button>
@@ -89,7 +89,7 @@ export function UnderstoodRow({
         ) : null}
         {understood.parser === "heuristic" ? (
           <span className="flex flex-wrap items-center gap-1.5">
-            <Pill tone="warn">
+            <Pill tint="orange">
               Basic parsing — AI understanding was unavailable
             </Pill>
             <Button
@@ -109,7 +109,7 @@ export function UnderstoodRow({
         <ul aria-label="Understood filters" className="mt-2 flex flex-wrap gap-2">
           {hasSemantic ? (
             <li>
-              <StaticChip variant="quoted">
+              <StaticChip tint="purple" icon={<SparkIcon />}>
                 looking for: “{semantic.text.trim()}”
               </StaticChip>
             </li>
@@ -134,18 +134,18 @@ export function UnderstoodRow({
           ) : null}
         </ul>
       ) : (
-        <p className="mt-2 text-[12.5px] text-ink-3">
+        <p className="mt-2 text-[12.5px] text-muted">
           No filters — showing the whole catalogue
         </p>
       )}
 
       {understood.notes ? (
-        <p className="mt-2 text-[12px] leading-[1.55] text-ink-3">
+        <p className="mt-2 text-[12px] leading-[1.55] text-muted">
           {understood.notes}
         </p>
       ) : null}
       {understood.warnings.map((warning) => (
-        <p key={warning} className="mt-1 text-[11.5px] leading-[1.5] text-warn">
+        <p key={warning} className="mt-1 text-[11.5px] leading-[1.5] text-orange">
           {warning}
         </p>
       ))}

@@ -6,10 +6,10 @@ type Variant = "primary" | "ghost" | "outline";
 
 const VARIANTS: Record<Variant, string> = {
   primary:
-    "bg-accent text-accent-fg hover:bg-accent-2 disabled:opacity-40 disabled:hover:bg-accent",
-  ghost: "text-ink-3 hover:text-ink disabled:opacity-50",
+    "bg-primary text-on-primary shadow-card hover:bg-primary-hover disabled:opacity-50 disabled:hover:bg-primary",
+  ghost: "text-muted hover:bg-surface-2 hover:text-ink disabled:opacity-50",
   outline:
-    "border border-rule-2 text-ink-2 hover:bg-paper-2 hover:border-ink-3 hover:text-ink disabled:opacity-50",
+    "border border-primary-line bg-card text-primary hover:bg-primary-soft disabled:opacity-50 disabled:hover:bg-card",
 };
 
 type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -25,7 +25,7 @@ export function Button({
   return (
     <button
       type={type}
-      className={`inline-flex items-center justify-center gap-2 rounded-[7px] px-[15px] py-2 text-[12.5px] font-medium tracking-[-0.005em] transition-[background-color,border-color,color,opacity] duration-[180ms] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-accent-bg disabled:cursor-default ${VARIANTS[variant]} ${className}`}
+      className={`inline-flex h-10 items-center justify-center gap-2 rounded-button px-4 text-[13.5px] font-medium transition-[background-color,border-color,color,opacity] duration-[180ms] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-primary-line disabled:cursor-default ${VARIANTS[variant]} ${className}`}
       {...props}
     />
   );

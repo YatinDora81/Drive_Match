@@ -22,7 +22,7 @@ function Fact({ label, value }: { label: string; value: string | null }) {
   if (value === null) return null;
   return (
     <div className="min-w-0">
-      <dt className="font-mono text-[9.5px] uppercase tracking-[0.11em] text-ink-3">
+      <dt className="text-[11px] font-medium uppercase tracking-[0.06em] text-muted">
         {label}
       </dt>
       <dd className="mt-0.5 truncate text-[13px] text-ink">{value}</dd>
@@ -100,18 +100,18 @@ export function VehicleSheet({ seed, matchedFeatures, onClose }: Props) {
       <div
         aria-hidden="true"
         onClick={onClose}
-        className="animate-fade absolute inset-0 bg-ink/20 dark:bg-black/55"
+        className="animate-fade absolute inset-0 bg-black/20 dark:bg-black/55"
       />
       <div
         ref={panelRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="animate-pop absolute inset-y-0 right-0 flex w-full max-w-[480px] flex-col bg-paper shadow-[var(--lift)] md:inset-y-3 md:right-3 md:rounded-[14px]"
+        className="animate-pop absolute inset-y-0 right-0 flex w-full max-w-[480px] flex-col bg-card shadow-sheet md:inset-y-3 md:right-3 md:rounded-card md:border md:border-line"
       >
-        <div className="flex items-start justify-between gap-3 border-b border-rule px-5 py-4">
+        <div className="flex items-start justify-between gap-3 border-b border-line px-5 py-4">
           <div className="min-w-0">
-            <div className="font-display text-[26px] font-semibold leading-none tracking-[-0.03em] text-ink">
+            <div className="text-[26px] font-bold leading-none tracking-[-0.025em] text-ink">
               {formatInr(vehicle.price)}
             </div>
             <h2
@@ -120,21 +120,21 @@ export function VehicleSheet({ seed, matchedFeatures, onClose }: Props) {
             >
               {titleOf(vehicle)}
             </h2>
-            <p className="text-[12.5px] text-ink-2">{vehicle.variant}</p>
+            <p className="text-[12.5px] text-body">{vehicle.variant}</p>
           </div>
           <IconButton ref={closeRef} label="Close details" onClick={onClose}>
             <CloseIcon />
           </IconButton>
         </div>
 
-        <div className="scroll-paper min-h-0 flex-1 overflow-y-auto px-5 py-4">
+        <div className="scroll-thin min-h-0 flex-1 overflow-y-auto px-5 py-4">
           <BodyGlyph
             bodyType={vehicle.bodyType}
             color={vehicle.color}
-            className="rounded-[10px] border border-rule"
+            className="rounded-field border border-line"
           />
 
-          <div className="mt-4 flex items-center gap-2 text-[12.5px] text-ink-2">
+          <div className="mt-4 flex items-center gap-2 text-[12.5px] text-body">
             <NcapStars rating={vehicle.safetyRating} />
             <span>Global NCAP</span>
           </div>
@@ -194,17 +194,17 @@ export function VehicleSheet({ seed, matchedFeatures, onClose }: Props) {
 
           {vehicle.description ? (
             <section className="mt-5" aria-label="Description">
-              <h3 className="font-mono text-[9.5px] uppercase tracking-[0.11em] text-ink-3">
+              <h3 className="text-[11px] font-medium uppercase tracking-[0.06em] text-muted">
                 Description
               </h3>
-              <p className="mt-1.5 text-[13.5px] leading-[1.66] tracking-[-0.006em] text-ink-2">
+              <p className="mt-1.5 text-[13.5px] leading-[1.66] tracking-[-0.006em] text-body">
                 {vehicle.description}
               </p>
             </section>
           ) : null}
 
           <section className="mt-5" aria-label="Features">
-            <h3 className="font-mono text-[9.5px] uppercase tracking-[0.11em] text-ink-3">
+            <h3 className="text-[11px] font-medium uppercase tracking-[0.06em] text-muted">
               Features · {vehicle.features.length}
             </h3>
             {vehicle.features.length > 0 ? (
@@ -214,8 +214,8 @@ export function VehicleSheet({ seed, matchedFeatures, onClose }: Props) {
                     key={feature}
                     className={`rounded-full px-2 py-[3px] text-[11.5px] leading-[1.3] ${
                       matched.has(feature)
-                        ? "bg-accent-bg font-medium text-accent"
-                        : "border border-rule bg-paper-2 text-ink-2"
+                        ? "border border-lavender-line bg-lavender-bg font-medium text-lavender"
+                        : "border border-line bg-surface-2 text-body"
                     }`}
                   >
                     {feature}
@@ -223,17 +223,17 @@ export function VehicleSheet({ seed, matchedFeatures, onClose }: Props) {
                 ))}
               </ul>
             ) : (
-              <p className="mt-1.5 text-[12.5px] text-ink-3">No features listed.</p>
+              <p className="mt-1.5 text-[12.5px] text-muted">No features listed.</p>
             )}
           </section>
 
-          <p className="mt-6 font-mono text-[10px] text-ink-3">
+          <p className="mt-6 font-mono text-[10px] text-muted">
             {vehicle.id}
             {listedText ? ` · listed ${listedText}` : ""}
             {isFetching && isPlaceholderData ? " · refreshing…" : ""}
           </p>
           {isError ? (
-            <p className="mt-1 text-[11.5px] text-err">
+            <p className="mt-1 text-[11.5px] text-red">
               Could not refresh this listing. Showing the copy from the search
               results.
             </p>
