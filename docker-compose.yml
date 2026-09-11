@@ -1,0 +1,125 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: vehicles-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: vehicles
+      POSTGRES_PASSWORD: vehicles
+      POSTGRES_DB: vehicles
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vehicles -d vehicles"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  qdrant:
+    image: qdrant/qdrant:v1.18.3
+    container_name: vehicles-qdrant
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:6333:6333"
+      - "127.0.0.1:6334:6334"
+    volumes:
+      - qdrantdata:/qdrant/storage
+    healthcheck:
+      test:
+        - CMD
+        - bash
+        - -c
+        - >-
+          exec 3<>/dev/tcp/127.0.0.1/6333 &&
+          printf 'GET /healthz HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n' >&3 &&
+          grep -q 'healthz check passed' <&3
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+  migrate:
+    build:
+      context: .
+      dockerfile: docker/migrate.Dockerfile
+    container_name: vehicles-migrate
+    restart: "no"
+    env_file: .env
+    environment:
+      DATABASE_URL: ${HOSTED_DATABASE_URL:-postgresql://vehicles:vehicles@postgres:5432/vehicles}
+      DIRECT_DATABASE_URL: ${DIRECT_DATABASE_URL:-${HOSTED_DATABASE_URL:-postgresql://vehicles:vehicles@postgres:5432/vehicles}}
+      QDRANT_URL: ${HOSTED_QDRANT_URL:-http://qdrant:6333}
+      QDRANT_API_KEY: ${HOSTED_QDRANT_API_KEY:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+
+  index:
+    build:
+      context: .
+      dockerfile: docker/index.Dockerfile
+    container_name: vehicles-index
+    restart: on-failure:5
+    env_file: .env
+    environment:
+      DATABASE_URL: ${HOSTED_DATABASE_URL:-postgresql://vehicles:vehicles@postgres:5432/vehicles}
+      QDRANT_URL: ${HOSTED_QDRANT_URL:-http://qdrant:6333}
+      QDRANT_API_KEY: ${HOSTED_QDRANT_API_KEY:-}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  api:
+    build:
+      context: .
+      dockerfile: docker/api.Dockerfile
+    container_name: vehicles-api
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      PORT: 4000
+      DATABASE_URL: ${HOSTED_DATABASE_URL:-postgresql://vehicles:vehicles@postgres:5432/vehicles}
+      QDRANT_URL: ${HOSTED_QDRANT_URL:-http://qdrant:6333}
+      QDRANT_API_KEY: ${HOSTED_QDRANT_API_KEY:-}
+      WEB_ORIGIN: http://localhost:3000
+      TRUST_PROXY: 1
+    ports:
+      - "4000:4000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "bun", "-e", "await fetch('http://127.0.0.1:4000/api/v1/health').then(r => process.exit(r.ok ? 0 : 1), () => process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 15s
+
+  web:
+    build:
+      context: .
+      dockerfile: docker/web.Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:4000/api/v1
+    container_name: vehicles-web
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  qdrantdata:
