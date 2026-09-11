@@ -147,8 +147,6 @@ export function Hero({
       {data ? (
         <div className="animate-fade mt-14">
           <h2 className="text-[11.5px] font-bold text-ink-3">In the catalogue</h2>
-          {/* Three counts share a row; the price range is twice as long, so it gets a full
-              row on phones and a double column from md up instead of truncating. */}
           <div className="mt-3 grid grid-cols-3 gap-3 md:grid-cols-5">
             <StatTile tone="brand" label="Cars" value={formatCount(data.total)} />
             <StatTile tone="hybrid" label="Brands" value={formatCount(data.makes.length)} />
