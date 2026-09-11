@@ -10,6 +10,7 @@ export type SearchOverride = {
   semanticQuery: string;
   hasSemanticIntent: boolean;
   sort: SearchSort | null;
+  source?: "edit" | "exact";
 };
 
 export type SearchParams = {

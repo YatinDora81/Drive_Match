@@ -2,6 +2,7 @@ import type { SearchParams } from "./search-request";
 
 export const qk = {
   facets: ["facets"] as const,
+  ready: ["ready"] as const,
   vehicle: (id: string) => ["vehicle", id] as const,
   parse: (query: string) => ["parse", query] as const,
   search: (params: SearchParams | null) =>
