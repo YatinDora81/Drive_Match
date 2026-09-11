@@ -1,0 +1,180 @@
+[
+  {
+    "query": "Show SUVs under ₹15L",
+    "filters": { "bodyTypes": ["SUV"], "priceMax": 1500000 },
+    "sort": null,
+    "minMatches": 12
+  },
+  {
+    "query": "Diesel automatic cars below 80k km",
+    "filters": {
+      "fuelTypes": ["DIESEL"],
+      "transmissions": ["AUTOMATIC"],
+      "kmMax": 80000
+    },
+    "sort": null,
+    "minMatches": 12
+  },
+  {
+    "query": "Family cars with high safety ratings",
+    "filters": { "seatsMin": 5, "safetyRatingMin": 4 },
+    "sort": null,
+    "minMatches": 12
+  },
+  {
+    "query": "sedan under 10 lakhs",
+    "filters": { "bodyTypes": ["SEDAN"], "priceMax": 1000000 },
+    "sort": null,
+    "minMatches": 8
+  },
+  {
+    "query": "cars between 5 and 8 lakh",
+    "filters": { "priceMin": 500000, "priceMax": 800000 },
+    "sort": null,
+    "minMatches": 12
+  },
+  {
+    "query": "hatchback around 6 lakh",
+    "filters": {
+      "bodyTypes": ["HATCHBACK"],
+      "priceMin": 510000,
+      "priceMax": 690000
+    },
+    "sort": null,
+    "minMatches": 5
+  },
+  {
+    "query": "petrol cars below 40,000 km",
+    "filters": { "fuelTypes": ["PETROL"], "kmMax": 40000 },
+    "sort": null,
+    "minMatches": 12
+  },
+  {
+    "query": "2020 or newer automatic SUV",
+    "filters": {
+      "bodyTypes": ["SUV"],
+      "transmissions": ["AUTOMATIC"],
+      "yearMin": 2020
+    },
+    "sort": null,
+    "minMatches": 12
+  },
+  {
+    "query": "not diesel 7 seater",
+    "filters": { "excludeFuelTypes": ["DIESEL"], "seatsMin": 7 },
+    "sort": null,
+    "minMatches": 8
+  },
+  {
+    "query": "anything but Maruti under 8 lakh",
+    "filters": { "excludeMakes": ["Maruti Suzuki"], "priceMax": 800000 },
+    "sort": null,
+    "minMatches": 12
+  },
+  {
+    "query": "automatic Creta in Delhi",
+    "filters": {
+      "transmissions": ["AUTOMATIC"],
+      "models": ["Creta"],
+      "cities": ["Delhi"]
+    },
+    "sort": null,
+    "minMatches": 0
+  },
+  {
+    "query": "Creta or Seltos",
+    "filters": { "models": ["Creta", "Seltos"] },
+    "sort": null,
+    "minMatches": 5
+  },
+  {
+    "query": "a Hyundai or a Tata Nexon under 10L",
+    "filters": { "makes": ["Hyundai"], "models": ["Nexon"], "priceMax": 1000000 },
+    "sort": null,
+    "minMatches": 8
+  },
+  {
+    "query": "cheapest automatic hatchback in Bengaluru",
+    "filters": {
+      "bodyTypes": ["HATCHBACK"],
+      "transmissions": ["AUTOMATIC"],
+      "cities": ["Bengaluru"]
+    },
+    "sort": { "field": "price", "direction": "asc" },
+    "minMatches": 1
+  },
+  {
+    "query": "newest EV",
+    "filters": { "fuelTypes": ["ELECTRIC"] },
+    "sort": { "field": "year", "direction": "desc" },
+    "minMatches": 5
+  },
+  {
+    "query": "EV with 400 km range",
+    "filters": { "fuelTypes": ["ELECTRIC"], "rangeMin": 400 },
+    "sort": null,
+    "minMatches": 3
+  },
+  {
+    "query": "first owner CNG car",
+    "filters": { "fuelTypes": ["CNG"], "ownerCountMax": 1 },
+    "sort": null,
+    "minMatches": 5
+  },
+  {
+    "query": "5 star safety SUV under 20 lakh",
+    "filters": { "bodyTypes": ["SUV"], "safetyRatingMin": 5, "priceMax": 2000000 },
+    "sort": null,
+    "minMatches": 8
+  },
+  {
+    "query": "white Innova in bangalore",
+    "filters": {
+      "models": ["Innova Crysta"],
+      "cities": ["Bengaluru"],
+      "colors": ["white"]
+    },
+    "sort": null,
+    "minMatches": 0
+  },
+  {
+    "query": "safest family car",
+    "filters": { "seatsMin": 5, "safetyRatingMin": 4 },
+    "sort": { "field": "safetyRating", "direction": "desc" },
+    "minMatches": 12
+  },
+  {
+    "query": "low km petrol hatchback",
+    "filters": {
+      "fuelTypes": ["PETROL"],
+      "bodyTypes": ["HATCHBACK"],
+      "kmMax": 40000
+    },
+    "sort": null,
+    "minMatches": 8
+  },
+  {
+    "query": "cars with sunroof and 360 camera under 15 lakh",
+    "filters": { "features": ["sunroof", "360 camera"], "priceMax": 1500000 },
+    "sort": null,
+    "minMatches": 12
+  },
+  {
+    "query": "XUV 700 diesel",
+    "filters": { "models": ["XUV700"], "fuelTypes": ["DIESEL"] },
+    "sort": null,
+    "minMatches": 1
+  },
+  {
+    "query": "cars before 2018 under 3 lakh",
+    "filters": { "yearMax": 2017, "priceMax": 300000 },
+    "sort": null,
+    "minMatches": 3
+  },
+  {
+    "query": "something fun to drive on weekends",
+    "filters": {},
+    "sort": null,
+    "minMatches": 0
+  }
+]
